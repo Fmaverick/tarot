@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 0 0% 98.5%;
+    --secondary-foreground: 0 0% 0%;
+    
+    --muted: 0 0% 98.5%;
+    --muted-foreground: 0 0% 40%;
+    
+    --accent: 0 0% 98.5%;
+    --accent-foreground: 0 0% 0%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 0 0% 0% / 0.08;
+    --input: 0 0% 0% / 0.08;
+    --ring: 0 0% 0%;
+    
+    --radius: 0.5rem;
+    
+    /* Mode colors from design rules */
+    --color-auto: 0.55 0.01 60;
+    --color-fortune: 0.7 0.1 290;
+    --color-listen: 0.75 0.08 165;
+    --color-divination: 0.7 0.1 290;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans selection:bg-black/5;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-md bg-white/70 border border-white/20 shadow-sm;
+  }
+  .eastern-shadow {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .mask-image-gradient {
+    mask-image: linear-gradient(to bottom, transparent 0%, black 100px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100px);
+  }
+}
