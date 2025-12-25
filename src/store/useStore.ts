@@ -16,6 +16,7 @@ interface TarotState {
   deck: DeckCard[];
   placedCards: Record<string, PlacedCard>; // Map positionId to PlacedCard
   isReading: boolean;
+  sessionId: string | null;
   language: 'en' | 'zh';
   
   // Actions
@@ -26,6 +27,7 @@ interface TarotState {
   removeCard: (positionId: string) => void;
   startReading: () => void;
   resetReading: () => void;
+  clearSpread: () => void;
 }
 
 export const useStore = create<TarotState>((set, get) => ({
@@ -33,6 +35,7 @@ export const useStore = create<TarotState>((set, get) => ({
   deck: [],
   placedCards: {},
   isReading: false,
+  sessionId: null,
   language: 'en',
 
   setLanguage: (lang) => set({ language: lang }),
@@ -50,7 +53,7 @@ export const useStore = create<TarotState>((set, get) => ({
       [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
     }
 
-    set({ deck: newDeck, placedCards: {}, isReading: false });
+    set({ deck: newDeck, placedCards: {}, isReading: false, sessionId: null });
   },
 
   selectSpread: (spreadId) => {
@@ -60,7 +63,11 @@ export const useStore = create<TarotState>((set, get) => ({
     if (currentDeck.length === 0) {
       get().initializeDeck();
     }
-    set({ selectedSpread: spread, placedCards: {}, isReading: false });
+    set({ selectedSpread: spread, placedCards: {}, isReading: false, sessionId: null });
+  },
+
+  clearSpread: () => {
+    set({ selectedSpread: null, placedCards: {}, isReading: false, sessionId: null });
   },
 
   placeCard: (card, positionId, isReversed) => set((state) => {
@@ -98,14 +105,9 @@ export const useStore = create<TarotState>((set, get) => ({
     };
   }),
 
-  startReading: () => set({ isReading: true }),
+  startReading: () => set({ isReading: true, sessionId: crypto.randomUUID() }),
 
   resetReading: () => {
     get().initializeDeck();
-    set({ 
-      selectedSpread: null, 
-      placedCards: {}, 
-      isReading: false 
-    });
   },
 }));

@@ -4,25 +4,38 @@ import { useStore } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Send, X } from "lucide-react";
+import { ArrowUp, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { AIConfig } from "@/types/tarot";
+import { useAuthStore } from "@/store/useAuthStore";
+import { AuthModal } from "@/components/auth/AuthModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { getTranslation } from "@/lib/i18n";
 
 interface ChatInterfaceProps {
-  config: AIConfig;
   onClose?: () => void;
 }
 
-export function ChatInterface({ config, onClose }: ChatInterfaceProps) {
-  const { selectedSpread, placedCards, isReading, startReading } = useStore();
+export function ChatInterface({ onClose }: ChatInterfaceProps) {
+  const { selectedSpread, placedCards, isReading, startReading, sessionId, language } = useStore();
+  const t = getTranslation(language);
+  const { user } = useAuthStore();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showLoginReminder, setShowLoginReminder] = useState(false);
   const [initialQuestion, setInitialQuestion] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, append, input, handleInputChange, handleSubmit, isLoading, setInput } = useChat({
     api: "/api/chat",
     body: {
-      config,
+      sessionId,
       context: {
         spread: selectedSpread,
         cards: Object.values(placedCards),
@@ -43,6 +56,11 @@ export function ChatInterface({ config, onClose }: ChatInterfaceProps) {
     const question = input.trim();
     if (!question) return;
 
+    if (!user) {
+        setShowLoginReminder(true);
+        return;
+    }
+
     setInitialQuestion(question);
     startReading();
     // Trigger the first AI response
@@ -51,7 +69,6 @@ export function ChatInterface({ config, onClose }: ChatInterfaceProps) {
       content: question,
     }, {
       body: {
-        config,
         context: {
           spread: selectedSpread,
           cards: Object.values(placedCards),
@@ -62,7 +79,14 @@ export function ChatInterface({ config, onClose }: ChatInterfaceProps) {
     setInput("");
   };
 
-  const onSubmit = isReading ? handleSubmit : handleStartReading;
+  const handleFormSubmit = (e: React.FormEvent) => {
+    if (!user) {
+        e.preventDefault();
+        setShowLoginReminder(true);
+        return;
+    }
+    return isReading ? handleSubmit(e) : handleStartReading(e);
+  };
 
   // Chat View
   return (
@@ -119,7 +143,7 @@ export function ChatInterface({ config, onClose }: ChatInterfaceProps) {
         <motion.form 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          onSubmit={onSubmit} 
+          onSubmit={handleFormSubmit} 
           className="relative flex flex-col gap-2"
         >
           <div className="relative">
@@ -129,23 +153,52 @@ export function ChatInterface({ config, onClose }: ChatInterfaceProps) {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  onSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+                  handleFormSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
                 }
               }}
-              placeholder={isReading ? "Ask a follow-up..." : "Ask your question..."}
-              className="w-full h-24 p-4 bg-white/80 backdrop-blur-md border border-black/10 rounded-2xl shadow-sm focus:outline-none focus:ring-1 focus:ring-black/20 resize-none text-sm font-light placeholder:text-black/40"
+              placeholder={isReading ? t.chat.placeholder_followup : t.chat.placeholder_start}
+              className="w-full h-24 p-4 bg-transparent focus:outline-none resize-none text-sm font-light placeholder:text-black/40"
             />
+            
+            {/* Custom Bottom Border */}
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-black/20 to-transparent" />
+
             <Button 
               type="submit"
               size="icon"
               disabled={isLoading || !input.trim()}
               className="absolute right-3 bottom-3 h-8 w-8 rounded-lg bg-black text-white hover:bg-black/80 shadow-md transition-all"
             >
-              <Send className="w-3 h-3" />
+              <ArrowUp className="w-4 h-4" />
             </Button>
           </div>
         </motion.form>
       </div>
+      
+      {/* Login Reminder */}
+      <Dialog open={showLoginReminder} onOpenChange={setShowLoginReminder}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{t.auth?.login_required || "Sign in to Consult"}</DialogTitle>
+            <DialogDescription>
+              {t.auth?.login_message || "Please sign in to start the AI interpretation of your spread."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowLoginReminder(false)}>
+              {t.auth?.cancel || "Cancel"}
+            </Button>
+            <Button onClick={() => {
+              setShowLoginReminder(false);
+              setShowAuthModal(true);
+            }}>
+              {t.auth?.login_action || "Sign In"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
 }

@@ -13,6 +13,8 @@ export function SpreadBoard() {
 
   if (!currentSpread) return null;
 
+  const isSpreadComplete = currentSpread.positions.every(p => placedCards[p.id]);
+
   return (
     <div 
       ref={containerRef}
@@ -63,7 +65,7 @@ export function SpreadBoard() {
                 >
                   <TarotCard 
                     card={placed.card} 
-                    isFlipped={true}
+                    isFlipped={isSpreadComplete}
                     isReversed={placed.isReversed}
                     className={cn(
                         "w-full h-full !shadow-md hover:!shadow-lg transition-shadow"
@@ -74,9 +76,11 @@ export function SpreadBoard() {
                     <span className="text-[9px] uppercase tracking-widest text-black/40 font-semibold bg-white/90 backdrop-blur px-2 py-0.5 rounded-full shadow-sm border border-black/5">
                         {pos.name}
                     </span>
-                    <span className="text-xs font-serif text-black/80 bg-white/90 backdrop-blur px-3 py-1 rounded-lg shadow-sm border border-black/5 whitespace-nowrap">
-                        {cardData?.name} {placed.isReversed && <span className="text-red-900/60 italic ml-1 text-[10px]">{language === 'zh' ? '(逆位)' : '(Rev.)'}</span>}
-                    </span>
+                    {isSpreadComplete && (
+                      <span className="text-xs font-serif text-black/80 bg-white/90 backdrop-blur px-3 py-1 rounded-lg shadow-sm border border-black/5 whitespace-nowrap">
+                          {cardData?.name} {placed.isReversed && <span className="text-red-900/60 italic ml-1 text-[10px]">{language === 'zh' ? '(逆位)' : '(Rev.)'}</span>}
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               )}

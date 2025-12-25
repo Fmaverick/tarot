@@ -36,9 +36,3 @@ export interface ReadingResult {
   cards: PlacedCard[];
   interpretation: string;
 }
-
-export interface AIConfig {
-  baseUrl: string;
-  apiKey: string;
-  model: string;
-}

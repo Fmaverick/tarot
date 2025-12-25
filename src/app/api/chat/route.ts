@@ -1,18 +1,87 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
 import { PlacedCard, SpreadPosition } from "@/types/tarot";
+import { getSession } from "@/lib/auth";
+import { db } from "@/db";
+import { users, sessions, messages as messagesTable, cardsDrawn } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages, context, config } = await req.json();
+  const { messages, context, sessionId } = await req.json();
   const { spread, cards, question } = context || {};
-  const { baseUrl, apiKey, model } = config || {};
 
-  // Use custom config if provided, otherwise fallback to environment variables
+  // Auth check
+  const session = await getSession();
+  if (!session || !session.userId) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const userId = Number(session.userId);
+
+  // Check/Create Session
+  if (!sessionId) {
+     return new Response("Session ID required", { status: 400 });
+  }
+
+  const dbSession = await db.query.sessions.findFirst({
+    where: eq(sessions.id, sessionId),
+  });
+
+  if (!dbSession) {
+    // New Session - Deduct Credit
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user || user.creditBalance < 1) {
+      return new Response("Insufficient credits", { status: 402 });
+    }
+
+    // Start Transaction
+    await db.transaction(async (tx) => {
+      // Deduct credit
+      await tx.update(users)
+        .set({ creditBalance: user.creditBalance - 1 })
+        .where(eq(users.id, userId));
+
+      // Create session
+      await tx.insert(sessions).values({
+        id: sessionId,
+        userId,
+        spreadId: spread.id,
+        question: question,
+      });
+
+      // Save cards
+      if (cards && cards.length > 0) {
+        for (const card of cards) {
+           await tx.insert(cardsDrawn).values({
+             sessionId,
+             cardId: card.card.id,
+             positionId: card.positionId,
+             isReversed: card.isReversed,
+           });
+        }
+      }
+    });
+  }
+
+  // Save User Message
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage.role === 'user') {
+    await db.insert(messagesTable).values({
+      sessionId,
+      role: 'user',
+      content: lastMessage.content,
+    });
+  }
+
+  // Use environment variables for configuration
   const openai = createOpenAI({
-    baseURL: baseUrl || process.env.OPENAI_BASE_URL,
-    apiKey: apiKey || process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL,
+    apiKey: process.env.OPENAI_API_KEY,
   });
 
   // Construct a detailed description of the spread
@@ -61,11 +130,18 @@ export async function POST(req: Request) {
   - The tone should feel like a whisper in a quiet garden.`;
 
   const result = await streamText({
-    model: openai(model || process.env.OPENAI_MODEL || 'gpt-4o'),
+    model: openai(process.env.OPENAI_MODEL || 'gpt-4o'),
     messages: [
       { role: "system", content: systemPrompt },
       ...messages,
     ],
+    onFinish: async (completion) => {
+        await db.insert(messagesTable).values({
+            sessionId,
+            role: 'assistant',
+            content: completion.text,
+        });
+    }
   });
 
   return result.toDataStreamResponse();
