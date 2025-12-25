@@ -24,25 +24,32 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ onClose }: ChatInterfaceProps) {
-  const { selectedSpread, placedCards, isReading, startReading, sessionId, language } = useStore();
+  const { selectedSpread, placedCards, isReading, startReading, sessionId, language, chatHistory, currentQuestion, setQuestion } = useStore();
   const t = getTranslation(language);
   const { user } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLoginReminder, setShowLoginReminder] = useState(false);
-  const [initialQuestion, setInitialQuestion] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, append, input, handleInputChange, handleSubmit, isLoading, setInput } = useChat({
+  const { messages, append, input, handleInputChange, handleSubmit, isLoading, setInput, setMessages } = useChat({
     api: "/api/chat",
     body: {
       sessionId,
       context: {
         spread: selectedSpread,
         cards: Object.values(placedCards),
-        question: initialQuestion,
+        question: currentQuestion,
       },
     },
+    initialMessages: chatHistory,
   });
+
+  // Sync chat history when it changes (e.g. loading a session)
+  useEffect(() => {
+    if (chatHistory && chatHistory.length > 0) {
+        setMessages(chatHistory);
+    }
+  }, [chatHistory, setMessages]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -61,7 +68,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
         return;
     }
 
-    setInitialQuestion(question);
+    setQuestion(question);
     startReading();
     // Trigger the first AI response
     await append({

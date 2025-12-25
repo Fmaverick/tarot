@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Spread, PlacedCard, TarotCard } from '@/types/tarot';
 import { SPREADS } from '@/lib/spreads';
 import { CARDS } from '@/lib/cards';
+import { Message } from 'ai';
 
 interface DeckCard {
   card: TarotCard;
@@ -18,9 +19,12 @@ interface TarotState {
   isReading: boolean;
   sessionId: string | null;
   language: 'en' | 'zh';
+  chatHistory: Message[];
+  currentQuestion: string;
   
   // Actions
   setLanguage: (lang: 'en' | 'zh') => void;
+  setQuestion: (question: string) => void;
   initializeDeck: () => void;
   selectSpread: (spreadId: string) => void;
   placeCard: (card: TarotCard, positionId: string, isReversed: boolean) => void;
@@ -28,6 +32,7 @@ interface TarotState {
   startReading: () => void;
   resetReading: () => void;
   clearSpread: () => void;
+  loadSession: (spreadId: string, placedCards: Record<string, PlacedCard>, sessionId: string, history: Message[], question: string) => void;
 }
 
 export const useStore = create<TarotState>((set, get) => ({
@@ -37,8 +42,24 @@ export const useStore = create<TarotState>((set, get) => ({
   isReading: false,
   sessionId: null,
   language: 'en',
+  chatHistory: [],
+  currentQuestion: "",
 
   setLanguage: (lang) => set({ language: lang }),
+  setQuestion: (question) => set({ currentQuestion: question }),
+
+  loadSession: (spreadId, placedCards, sessionId, history, question) => {
+    const spread = SPREADS.find(s => s.id === spreadId) || SPREADS[0];
+    set({
+      selectedSpread: spread,
+      placedCards,
+      sessionId,
+      chatHistory: history,
+      currentQuestion: question,
+      isReading: true,
+      deck: [] // Deck is not needed or we can initialize it empty since reading is done
+    });
+  },
 
   initializeDeck: () => {
     // Create deck with random orientation
@@ -53,7 +74,7 @@ export const useStore = create<TarotState>((set, get) => ({
       [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
     }
 
-    set({ deck: newDeck, placedCards: {}, isReading: false, sessionId: null });
+    set({ deck: newDeck, placedCards: {}, isReading: false, sessionId: null, chatHistory: [], currentQuestion: "" });
   },
 
   selectSpread: (spreadId) => {
@@ -63,11 +84,11 @@ export const useStore = create<TarotState>((set, get) => ({
     if (currentDeck.length === 0) {
       get().initializeDeck();
     }
-    set({ selectedSpread: spread, placedCards: {}, isReading: false, sessionId: null });
+    set({ selectedSpread: spread, placedCards: {}, isReading: false, sessionId: null, chatHistory: [], currentQuestion: "" });
   },
 
   clearSpread: () => {
-    set({ selectedSpread: null, placedCards: {}, isReading: false, sessionId: null });
+    set({ selectedSpread: null, placedCards: {}, isReading: false, sessionId: null, chatHistory: [], currentQuestion: "" });
   },
 
   placeCard: (card, positionId, isReversed) => set((state) => {
