@@ -17,6 +17,14 @@ export const translations = {
       label: "Select Spread",
       title: "Choose your path of inquiry",
       cards_count: "Cards",
+      description_hint: "Choose a spread that fits your question. Beginners start with Single Card or Three Card Spread",
+      recommended: "Recommended",
+      difficulty: {
+        beginner: "Beginner",
+        easy: "Easy",
+        medium: "Medium",
+        advanced: "Advanced",
+      },
     },
     chat: {
       placeholder: "Ask about your reading...",
@@ -67,6 +75,14 @@ export const translations = {
       label: "选择牌阵",
       title: "选择你的探索路径",
       cards_count: "张牌",
+      description_hint: "选择适合你问题的牌阵，新手推荐从单张牌或三张牌开始",
+      recommended: "推荐",
+      difficulty: {
+        beginner: "入门",
+        easy: "简单",
+        medium: "中等",
+        advanced: "高级",
+      },
     },
     chat: {
       placeholder: "询问关于解读的问题...",

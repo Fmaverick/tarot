@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TarotCard } from "@/components/tarot/card";
 import { CardDetailModal } from "@/components/tarot/CardDetailModal";
 import { getSpread, getCard } from "@/lib/i18n";
+import { TarotCard as TarotCardType } from "@/types/tarot";
 
 export function SpreadBoard() {
   const { selectedSpread, placedCards, language } = useStore();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedCard, setSelectedCard] = useState<{ card: any; isReversed: boolean } | null>(null);
+  const [selectedCard, setSelectedCard] = useState<{ card: TarotCardType; isReversed: boolean } | null>(null);
 
   const currentSpread = selectedSpread ? getSpread(selectedSpread.id, language) : null;
 
@@ -20,7 +21,7 @@ export function SpreadBoard() {
   return (
     <div 
       ref={containerRef}
-      className="relative w-full aspect-[4/3] max-w-4xl mx-auto bg-white/30 backdrop-blur-sm rounded-3xl overflow-hidden my-8"
+      className="relative w-full aspect-[4/3] max-w-4xl mx-auto my-8"
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent" />
