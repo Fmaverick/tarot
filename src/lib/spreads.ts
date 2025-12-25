@@ -5,6 +5,10 @@ export const SPREADS: Spread[] = [
     id: "single",
     name: "Single Card",
     description: "A simple reading for a quick answer or daily guidance.",
+    detail: "Perfect for beginners, quick insights and daily guidance.",
+    difficulty: "beginner",
+    recommended: true,
+    tags: ["Daily", "Quick", "Beginner Friendly"],
     positions: [
       { id: "1", name: "The Card", description: "The answer or guidance you seek.", x: 50, y: 50 }
     ]
@@ -13,6 +17,10 @@ export const SPREADS: Spread[] = [
     id: "three-card",
     name: "Past, Present, Future",
     description: "A classic spread to understand the timeline of a situation.",
+    detail: "Explore the origins, current state, and potential future of your question.",
+    difficulty: "easy",
+    recommended: true,
+    tags: ["Timeline", "General", "Beginner Friendly"],
     positions: [
       { id: "1", name: "Past", description: "Influences from the past.", x: 20, y: 50 },
       { id: "2", name: "Present", description: "The current situation.", x: 50, y: 50 },
@@ -23,6 +31,10 @@ export const SPREADS: Spread[] = [
     id: "relationship",
     name: "Relationship Spread",
     description: "Explore the dynamics between you and another.",
+    detail: "Deep dive into personal relationships, romantic interests, or partnerships.",
+    difficulty: "medium",
+    recommended: false,
+    tags: ["Love", "Relationships", "Romance"],
     positions: [
       { id: "1", name: "You", description: "Your role in the relationship.", x: 20, y: 50 },
       { id: "2", name: "Dynamics", description: "The current state of the relationship.", x: 50, y: 30 },
@@ -33,6 +45,10 @@ export const SPREADS: Spread[] = [
     id: "celtic-cross",
     name: "Celtic Cross",
     description: "A comprehensive spread for deep insight into complex situations.",
+    detail: "One of the most famous Tarot spreads for comprehensive analysis of complex issues.",
+    difficulty: "advanced",
+    recommended: false,
+    tags: ["Deep", "Complex Issues", "Comprehensive"],
     positions: [
       { id: "1", name: "The Present", description: "The core of the situation.", x: 35, y: 50 },
       { id: "2", name: "The Challenge", description: "What crosses you (obstacle).", x: 35, y: 50 }, // Overlapping 1

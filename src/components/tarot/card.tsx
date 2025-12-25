@@ -13,6 +13,7 @@ interface TarotCardProps {
   isReversed?: boolean;
   onFlip?: () => void;
   className?: string;
+  draggable?: boolean;
 }
 
 export const TarotCard = ({
@@ -21,6 +22,7 @@ export const TarotCard = ({
   isReversed = false,
   onFlip,
   className,
+  draggable = true,
 }: TarotCardProps) => {
   const [hovered, setHovered] = useState(false);
   
@@ -59,9 +61,9 @@ export const TarotCard = ({
 
   return (
     <motion.div
-      drag
-      dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
-      dragElastic={0.6}
+      drag={draggable}
+      dragConstraints={draggable ? { top: 0, left: 0, right: 0, bottom: 0 } : undefined}
+      dragElastic={draggable ? 0.6 : 0}
       style={{
         x,
         y,
@@ -73,7 +75,8 @@ export const TarotCard = ({
         transformStyle: "preserve-3d",
       }}
       className={cn(
-        "relative w-56 h-96 cursor-pointer select-none transition-shadow duration-500",
+        "relative w-56 h-96 select-none transition-shadow duration-500",
+        draggable ? "cursor-pointer" : onFlip ? "cursor-pointer" : "cursor-default",
         hovered ? "eastern-shadow" : "shadow-sm",
         className
       )}
