@@ -1,0 +1,847 @@
+import { TarotCard } from "@/types/tarot";
+
+export const CARDS: TarotCard[] = [
+  // Major Arcana
+  {
+    id: "major-0",
+    name: "The Fool",
+    arcana: "major",
+    value: "0",
+    meaning_upright: "Beginnings, innocence, spontaneity, a free spirit",
+    meaning_reversed: "Holding back, recklessness, risk-taking",
+    description: "A young man walks towards the edge of a cliff, looking up at the sky.",
+    image: "/cards/major-0.jpg"
+  },
+  {
+    id: "major-1",
+    name: "The Magician",
+    arcana: "major",
+    value: "I",
+    meaning_upright: "Manifestation, resourcefulness, power, inspired action",
+    meaning_reversed: "Manipulation, poor planning, untapped talents",
+    description: "A figure stands with one hand pointing to the sky and the other to the earth.",
+    image: "/cards/major-1.jpg"
+  },
+  {
+    id: "major-2",
+    name: "The High Priestess",
+    arcana: "major",
+    value: "II",
+    meaning_upright: "Intuition, sacred knowledge, divine feminine, the subconscious mind",
+    meaning_reversed: "Secrets, disconnected from intuition, withdrawal and silence",
+    description: "A woman sits between two pillars, holding a scroll.",
+    image: "/cards/major-2.jpg"
+  },
+  {
+    id: "major-3",
+    name: "The Empress",
+    arcana: "major",
+    value: "III",
+    meaning_upright: "Femininity, beauty, nature, nurturing, abundance",
+    meaning_reversed: "Creative block, dependence on others",
+    description: "A motherly figure sits on a throne surrounded by nature.",
+    image: "/cards/major-3.jpg"
+  },
+  {
+    id: "major-4",
+    name: "The Emperor",
+    arcana: "major",
+    value: "IV",
+    meaning_upright: "Authority, establishment, structure, a father figure",
+    meaning_reversed: "Domination, excessive control, lack of discipline, inflexibility",
+    description: "A stoic ruler sits on a stone throne adorned with rams' heads.",
+    image: "/cards/major-4.jpg"
+  },
+  {
+    id: "major-5",
+    name: "The Hierophant",
+    arcana: "major",
+    value: "V",
+    meaning_upright: "Spiritual wisdom, religious beliefs, conformity, tradition, institutions",
+    meaning_reversed: "Personal beliefs, freedom, challenging the status quo",
+    description: "A religious figure sits between two pillars of a sacred temple.",
+    image: "/cards/major-5.jpg"
+  },
+  {
+    id: "major-6",
+    name: "The Lovers",
+    arcana: "major",
+    value: "VI",
+    meaning_upright: "Love, harmony, relationships, values alignment, choices",
+    meaning_reversed: "Self-love, disharmony, imbalance, misalignment of values",
+    description: "A naked man and woman stand beneath an angel.",
+    image: "/cards/major-6.jpg"
+  },
+  {
+    id: "major-7",
+    name: "The Chariot",
+    arcana: "major",
+    value: "VII",
+    meaning_upright: "Control, willpower, success, action, determination",
+    meaning_reversed: "Self-discipline, opposition, lack of direction",
+    description: "A warrior stands inside a chariot, driven by two sphinxes.",
+    image: "/cards/major-7.jpg"
+  },
+  {
+    id: "major-8",
+    name: "Strength",
+    arcana: "major",
+    value: "VIII",
+    meaning_upright: "Strength, courage, persuasion, influence, compassion",
+    meaning_reversed: "Inner strength, self-doubt, low energy, raw emotion",
+    description: "A woman gently strokes a lion, taming it with compassion.",
+    image: "/cards/major-8.jpg"
+  },
+  {
+    id: "major-9",
+    name: "The Hermit",
+    arcana: "major",
+    value: "IX",
+    meaning_upright: "Soul-searching, introspection, being alone, inner guidance",
+    meaning_reversed: "Isolation, loneliness, withdrawal",
+    description: "An old man stands alone on a mountain peak, holding a lantern.",
+    image: "/cards/major-9.jpg"
+  },
+  {
+    id: "major-10",
+    name: "Wheel of Fortune",
+    arcana: "major",
+    value: "X",
+    meaning_upright: "Good luck, karma, life cycles, destiny, a turning point",
+    meaning_reversed: "Bad luck, resistance to change, breaking cycles",
+    description: "A giant wheel with various creatures and symbols revolves in the sky.",
+    image: "/cards/major-10.jpg"
+  },
+  {
+    id: "major-11",
+    name: "Justice",
+    arcana: "major",
+    value: "XI",
+    meaning_upright: "Justice, fairness, truth, cause and effect, law",
+    meaning_reversed: "Unfairness, lack of accountability, dishonesty",
+    description: "A figure sits before a purple veil, holding a sword and scales.",
+    image: "/cards/major-11.jpg"
+  },
+  {
+    id: "major-12",
+    name: "The Hanged Man",
+    arcana: "major",
+    value: "XII",
+    meaning_upright: "Pause, surrender, letting go, new perspectives",
+    meaning_reversed: "Delays, resistance, stalling, indecision",
+    description: "A man hangs upside down from a tree, looking serene.",
+    image: "/cards/major-12.jpg"
+  },
+  {
+    id: "major-13",
+    name: "Death",
+    arcana: "major",
+    value: "XIII",
+    meaning_upright: "Endings, change, transformation, transition",
+    meaning_reversed: "Resistance to change, personal transformation, inability to move on",
+    description: "A skeleton in armor rides a white horse.",
+    image: "/cards/major-13.jpg"
+  },
+  {
+    id: "major-14",
+    name: "Temperance",
+    arcana: "major",
+    value: "XIV",
+    meaning_upright: "Balance, moderation, patience, purpose",
+    meaning_reversed: "Imbalance, excess, self-healing, re-alignment",
+    description: "An angel stands with one foot on land and one in water, pouring liquid between cups.",
+    image: "/cards/major-14.jpg"
+  },
+  {
+    id: "major-15",
+    name: "The Devil",
+    arcana: "major",
+    value: "XV",
+    meaning_upright: "Shadow self, attachment, addiction, restriction, sexuality",
+    meaning_reversed: "Releasing limiting beliefs, exploring dark thoughts, detachment",
+    description: "A horned figure sits above a chained man and woman.",
+    image: "/cards/major-15.jpg"
+  },
+  {
+    id: "major-16",
+    name: "The Tower",
+    arcana: "major",
+    value: "XVI",
+    meaning_upright: "Sudden change, upheaval, chaos, revelation, awakening",
+    meaning_reversed: "Personal transformation, fear of change, averting disaster",
+    description: "Lightning strikes a tall tower, and figures fall from it.",
+    image: "/cards/major-16.jpg"
+  },
+  {
+    id: "major-17",
+    name: "The Star",
+    arcana: "major",
+    value: "XVII",
+    meaning_upright: "Hope, faith, purpose, renewal, spirituality",
+    meaning_reversed: "Lack of faith, despair, self-trust, disconnection",
+    description: "A naked woman kneels by a pool of water under a starry sky.",
+    image: "/cards/major-17.jpg"
+  },
+  {
+    id: "major-18",
+    name: "The Moon",
+    arcana: "major",
+    value: "XVIII",
+    meaning_upright: "Illusion, fear, anxiety, subconscious, intuition",
+    meaning_reversed: "Release of fear, repressed emotion, inner confusion",
+    description: "A full moon shines over a path between two towers.",
+    image: "/cards/major-18.jpg"
+  },
+  {
+    id: "major-19",
+    name: "The Sun",
+    arcana: "major",
+    value: "XIX",
+    meaning_upright: "Positivity, fun, warmth, success, vitality",
+    meaning_reversed: "Inner child, feeling down, overly optimistic",
+    description: "A bright sun shines on a young child riding a white horse.",
+    image: "/cards/major-19.jpg"
+  },
+  {
+    id: "major-20",
+    name: "Judgement",
+    arcana: "major",
+    value: "XX",
+    meaning_upright: "Judgement, rebirth, inner calling, absolution",
+    meaning_reversed: "Self-doubt, inner critic, ignoring the call",
+    description: "An angel blows a trumpet, and people rise from graves.",
+    image: "/cards/major-20.jpg"
+  },
+  {
+    id: "major-21",
+    name: "The World",
+    arcana: "major",
+    value: "XXI",
+    meaning_upright: "Completion, integration, accomplishment, travel",
+    meaning_reversed: "Seeking personal closure, short-cuts, delays",
+    description: "A figure dances inside a laurel wreath, surrounded by four creatures.",
+    image: "/cards/major-21.jpg"
+  },
+  // Wands
+  {
+    id: "wands-1",
+    name: "Ace of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "Ace",
+    meaning_upright: "Inspiration, new opportunities, growth, potential",
+    meaning_reversed: "An emerging idea, lack of direction, distractions",
+    description: "A hand holding a sprouting wand.",
+    image: "/cards/wands-1.jpg"
+  },
+  {
+    id: "wands-2",
+    name: "Two of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "2",
+    meaning_upright: "Future planning, progress, decisions, discovery",
+    meaning_reversed: "Personal goals, inner alignment, fear of unknown",
+    description: "A figure holding a globe and a wand, looking out.",
+    image: "/cards/wands-2.jpg"
+  },
+  {
+    id: "wands-3",
+    name: "Three of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "3",
+    meaning_upright: "Progress, expansion, foresight, overseas opportunities",
+    meaning_reversed: "Playing small, lack of foresight, unexpected delays",
+    description: "A figure stands on a cliff back turned, looking at ships.",
+    image: "/cards/wands-3.jpg"
+  },
+  {
+    id: "wands-4",
+    name: "Four of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "4",
+    meaning_upright: "Celebration, joy, harmony, relaxation, homecoming",
+    meaning_reversed: "Personal celebration, inner harmony, conflict with family",
+    description: "A couple dances under a wreath tied between four wands.",
+    image: "/cards/wands-4.jpg"
+  },
+  {
+    id: "wands-5",
+    name: "Five of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "5",
+    meaning_upright: "Conflict, disagreements, competition, tension, diversity",
+    meaning_reversed: "Inner conflict, conflict avoidance, tension release",
+    description: "Five figures brandish wands in a chaotic manner.",
+    image: "/cards/wands-5.jpg"
+  },
+  {
+    id: "wands-6",
+    name: "Six of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "6",
+    meaning_upright: "Success, public recognition, progress, self-confidence",
+    meaning_reversed: "Private achievement, personal definition of success, fall from grace",
+    description: "A figure rides a horse wearing a victory wreath.",
+    image: "/cards/wands-6.jpg"
+  },
+  {
+    id: "wands-7",
+    name: "Seven of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "7",
+    meaning_upright: "Challenge, competition, protection, perseverance",
+    meaning_reversed: "Exhaustion, giving up, overwhelmed",
+    description: "A figure on a hill defends himself against six wands from below.",
+    image: "/cards/wands-7.jpg"
+  },
+  {
+    id: "wands-8",
+    name: "Eight of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "8",
+    meaning_upright: "Movement, fast paced change, action, alignment",
+    meaning_reversed: "Delays, frustration, resisting change, internal alignment",
+    description: "Eight wands fly through the air.",
+    image: "/cards/wands-8.jpg"
+  },
+  {
+    id: "wands-9",
+    name: "Nine of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "9",
+    meaning_upright: "Resilience, courage, persistence, test of faith",
+    meaning_reversed: "Inner resources, struggle, overwhelm, defensive",
+    description: "A figure stands defensively, bandaged, with nine wands behind.",
+    image: "/cards/wands-9.jpg"
+  },
+  {
+    id: "wands-10",
+    name: "Ten of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "10",
+    meaning_upright: "Burden, extra responsibility, hard work, completion",
+    meaning_reversed: "Doing it all, carrying the burden, delegation",
+    description: "A figure carries a heavy bundle of ten wands.",
+    image: "/cards/wands-10.jpg"
+  },
+  {
+    id: "wands-page",
+    name: "Page of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "Page",
+    meaning_upright: "Inspiration, ideas, discovery, limitless potential",
+    meaning_reversed: "Newly formed ideas, redirecting energy, self-limiting beliefs",
+    description: "A young figure holds a wand, looking at it curiously.",
+    image: "/cards/wands-page.jpg"
+  },
+  {
+    id: "wands-knight",
+    name: "Knight of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "Knight",
+    meaning_upright: "Energy, passion, inspired action, adventure, impulsiveness",
+    meaning_reversed: "Passion project, haste, scattered energy, delays",
+    description: "A knight rides a horse, charging forward with a wand.",
+    image: "/cards/wands-knight.jpg"
+  },
+  {
+    id: "wands-queen",
+    name: "Queen of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "Queen",
+    meaning_upright: "Courage, confidence, independence, social butterfly, determination",
+    meaning_reversed: "Self-respect, self-confidence, introverted, re-establishing sense of self",
+    description: "A queen sits on a throne with lions, holding a wand and sunflower.",
+    image: "/cards/wands-queen.jpg"
+  },
+  {
+    id: "wands-king",
+    name: "King of Wands",
+    arcana: "minor",
+    suit: "wands",
+    value: "King",
+    meaning_upright: "Natural-born leader, vision, entrepreneur, honour",
+    meaning_reversed: "Impulsive, overbearing, unachievable expectations",
+    description: "A king sits on a throne, holding a blossoming wand.",
+    image: "/cards/wands-king.jpg"
+  },
+  // Cups
+  {
+    id: "cups-1",
+    name: "Ace of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "Ace",
+    meaning_upright: "Love, new relationships, compassion, creativity",
+    meaning_reversed: "Self-love, intuition, repressed emotions",
+    description: "A hand offers a cup overflowing with five streams of water.",
+    image: "/cards/cups-1.jpg"
+  },
+  {
+    id: "cups-2",
+    name: "Two of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "2",
+    meaning_upright: "Unified love, partnership, mutual attraction",
+    meaning_reversed: "Self-love, break-ups, disharmony, distrust",
+    description: "A couple exchanges cups in a ceremony.",
+    image: "/cards/cups-2.jpg"
+  },
+  {
+    id: "cups-3",
+    name: "Three of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "3",
+    meaning_upright: "Celebration, friendship, creativity, collaborations",
+    meaning_reversed: "Independence, alone time, stifled creativity",
+    description: "Three women dance in a circle, raising cups.",
+    image: "/cards/cups-3.jpg"
+  },
+  {
+    id: "cups-4",
+    name: "Four of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "4",
+    meaning_upright: "Meditation, contemplation, apathy, re-evaluation",
+    meaning_reversed: "Retreat, withdrawal, checking in for alignment",
+    description: "A figure sits under a tree, ignoring a cup offered by a hand.",
+    image: "/cards/cups-4.jpg"
+  },
+  {
+    id: "cups-5",
+    name: "Five of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "5",
+    meaning_upright: "Regret, failure, disappointment, pessimism",
+    meaning_reversed: "Personal setbacks, self-forgiveness, moving on",
+    description: "A figure in a black cloak looks at three spilled cups.",
+    image: "/cards/cups-5.jpg"
+  },
+  {
+    id: "cups-6",
+    name: "Six of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "6",
+    meaning_upright: "Revisiting the past, childhood memories, innocence, joy",
+    meaning_reversed: "Living in the past, forgiveness, lacking playfulness",
+    description: "Children play in a garden with cups filled with flowers.",
+    image: "/cards/cups-6.jpg"
+  },
+  {
+    id: "cups-7",
+    name: "Seven of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "7",
+    meaning_upright: "Opportunities, choices, wishful thinking, illusion",
+    meaning_reversed: "Alignment, personal values, overwhelmed by choices",
+    description: "A figure sees seven cups in clouds containing various visions.",
+    image: "/cards/cups-7.jpg"
+  },
+  {
+    id: "cups-8",
+    name: "Eight of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "8",
+    meaning_upright: "Disappointment, abandonment, withdrawal, escapism",
+    meaning_reversed: "Trying one more time, indecision, aimless drifting",
+    description: "A figure walks away from eight stacked cups towards mountains.",
+    image: "/cards/cups-8.jpg"
+  },
+  {
+    id: "cups-9",
+    name: "Nine of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "9",
+    meaning_upright: "Contentment, satisfaction, gratitude, wish come true",
+    meaning_reversed: "Inner happiness, materialism, dissatisfaction, indulgence",
+    description: "A figure sits smugly with nine cups arranged behind.",
+    image: "/cards/cups-9.jpg"
+  },
+  {
+    id: "cups-10",
+    name: "Ten of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "10",
+    meaning_upright: "Divine love, blissful relationships, harmony, alignment",
+    meaning_reversed: "Disconnection, misaligned values, struggling relationships",
+    description: "A happy family stands under a rainbow of ten cups.",
+    image: "/cards/cups-10.jpg"
+  },
+  {
+    id: "cups-page",
+    name: "Page of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "Page",
+    meaning_upright: "Creative opportunities, intuitive messages, curiosity",
+    meaning_reversed: "New ideas, doubting intuition, creative blocks",
+    description: "A youth holds a cup with a fish popping out.",
+    image: "/cards/cups-page.jpg"
+  },
+  {
+    id: "cups-knight",
+    name: "Knight of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "Knight",
+    meaning_upright: "Creativity, romance, charm, imagination, beauty",
+    meaning_reversed: "Overactive imagination, unrealistic, jealous, moody",
+    description: "A knight rides a horse, offering a cup.",
+    image: "/cards/cups-knight.jpg"
+  },
+  {
+    id: "cups-queen",
+    name: "Queen of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "Queen",
+    meaning_upright: "Compassionate, caring, emotionally stable, intuitive",
+    meaning_reversed: "Inner feelings, self-care, self-love, co-dependency",
+    description: "A queen sits on a throne by the sea, gazing at a cup.",
+    image: "/cards/cups-queen.jpg"
+  },
+  {
+    id: "cups-king",
+    name: "King of Cups",
+    arcana: "minor",
+    suit: "cups",
+    value: "King",
+    meaning_upright: "Emotionally balanced, compassionate, diplomatic",
+    meaning_reversed: "Self-compassion, inner feelings, moodiness, emotionally manipulative",
+    description: "A king sits on a throne floating on water.",
+    image: "/cards/cups-king.jpg"
+  },
+  // Swords
+  {
+    id: "swords-1",
+    name: "Ace of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "Ace",
+    meaning_upright: "Breakthroughs, new ideas, mental clarity, success",
+    meaning_reversed: "Inner clarity, re-thinking an idea, clouded judgement",
+    description: "A hand holds a sword upright, crowned with a wreath.",
+    image: "/cards/swords-1.jpg"
+  },
+  {
+    id: "swords-2",
+    name: "Two of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "2",
+    meaning_upright: "Difficult decisions, weighing up options, an impasse, avoidance",
+    meaning_reversed: "Indecision, confusion, information overload, stalemate",
+    description: "A blindfolded figure holds two crossed swords.",
+    image: "/cards/swords-2.jpg"
+  },
+  {
+    id: "swords-3",
+    name: "Three of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "3",
+    meaning_upright: "Heartbreak, emotional pain, sorrow, grief, hurt",
+    meaning_reversed: "Negative self-talk, releasing pain, optimism, forgiveness",
+    description: "A heart is pierced by three swords.",
+    image: "/cards/swords-3.jpg"
+  },
+  {
+    id: "swords-4",
+    name: "Four of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "4",
+    meaning_upright: "Rest, relaxation, meditation, contemplation, recuperation",
+    meaning_reversed: "Exhaustion, burn-out, deep contemplation, stagnation",
+    description: "A knight lies on a tomb, three swords hanging above.",
+    image: "/cards/swords-4.jpg"
+  },
+  {
+    id: "swords-5",
+    name: "Five of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "5",
+    meaning_upright: "Conflict, disagreements, competition, defeat, winning at all costs",
+    meaning_reversed: "Reconciliation, making amends, past resentment",
+    description: "A figure smiles as he collects swords from defeated opponents.",
+    image: "/cards/swords-5.jpg"
+  },
+  {
+    id: "swords-6",
+    name: "Six of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "6",
+    meaning_upright: "Transition, change, rite of passage, releasing baggage",
+    meaning_reversed: "Personal transition, resistance to change, unfinished business",
+    description: "A figure ferries a woman and child in a boat with swords.",
+    image: "/cards/swords-6.jpg"
+  },
+  {
+    id: "swords-7",
+    name: "Seven of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "7",
+    meaning_upright: "Betrayal, deception, getting away with something, stealth",
+    meaning_reversed: "Mental challenges, breaking free, keeping secrets",
+    description: "A figure sneaks away carrying five swords.",
+    image: "/cards/swords-7.jpg"
+  },
+  {
+    id: "swords-8",
+    name: "Eight of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "8",
+    meaning_upright: "Negative thoughts, self-imposed restriction, imprisonment, victim mentality",
+    meaning_reversed: "Self-limiting beliefs, inner critic, releasing negative thoughts",
+    description: "A bound and blindfolded figure stands amidst swords.",
+    image: "/cards/swords-8.jpg"
+  },
+  {
+    id: "swords-9",
+    name: "Nine of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "9",
+    meaning_upright: "Anxiety, worry, fear, depression, nightmares",
+    meaning_reversed: "Inner turmoil, deep-seated fears, secrets, releasing worry",
+    description: "A figure sits up in bed, head in hands, with nine swords above.",
+    image: "/cards/swords-9.jpg"
+  },
+  {
+    id: "swords-10",
+    name: "Ten of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "10",
+    meaning_upright: "Painful endings, deep wounds, betrayal, loss, crisis",
+    meaning_reversed: "Recovery, regeneration, resisting an inevitable end",
+    description: "A figure lies face down, pierced by ten swords.",
+    image: "/cards/swords-10.jpg"
+  },
+  {
+    id: "swords-page",
+    name: "Page of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "Page",
+    meaning_upright: "New ideas, curiosity, thirst for knowledge, new ways of communicating",
+    meaning_reversed: "Self-expression, all talk and no action, haphazard action",
+    description: "A youth holds a sword, looking ready for action.",
+    image: "/cards/swords-page.jpg"
+  },
+  {
+    id: "swords-knight",
+    name: "Knight of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "Knight",
+    meaning_upright: "Ambitious, action-oriented, driven to succeed, fast-thinking",
+    meaning_reversed: "Restless, unfocused, impulsive, burn-out",
+    description: "A knight charges forward on a horse with a sword.",
+    image: "/cards/swords-knight.jpg"
+  },
+  {
+    id: "swords-queen",
+    name: "Queen of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "Queen",
+    meaning_upright: "Independent, unbiased judgement, clear boundaries, direct communication",
+    meaning_reversed: "Overly-emotional, easily influenced, bitchy, cold",
+    description: "A queen sits on a throne, holding a sword upright.",
+    image: "/cards/swords-queen.jpg"
+  },
+  {
+    id: "swords-king",
+    name: "King of Swords",
+    arcana: "minor",
+    suit: "swords",
+    value: "King",
+    meaning_upright: "Mental clarity, intellectual power, authority, truth",
+    meaning_reversed: "Quiet power, inner truth, misuse of power, manipulation",
+    description: "A king sits on a throne, holding a sword upright.",
+    image: "/cards/swords-king.jpg"
+  },
+  // Pentacles
+  {
+    id: "pentacles-1",
+    name: "Ace of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "Ace",
+    meaning_upright: "A new financial or career opportunity, manifestation, abundance",
+    meaning_reversed: "Lost opportunity, lack of planning and foresight",
+    description: "A hand offers a large pentacle in a garden.",
+    image: "/cards/pentacles-1.jpg"
+  },
+  {
+    id: "pentacles-2",
+    name: "Two of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "2",
+    meaning_upright: "Multiple priorities, time management, prioritisation, adaptability",
+    meaning_reversed: "Over-committed, disorganisation, reprioritisation",
+    description: "A juggler handles two pentacles inside an infinity loop.",
+    image: "/cards/pentacles-2.jpg"
+  },
+  {
+    id: "pentacles-3",
+    name: "Three of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "3",
+    meaning_upright: "Teamwork, collaboration, learning, implementation",
+    meaning_reversed: "Disharmony, misalignment, working alone",
+    description: "A sculptor works on a church, consulting with monks.",
+    image: "/cards/pentacles-3.jpg"
+  },
+  {
+    id: "pentacles-4",
+    name: "Four of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "4",
+    meaning_upright: "Saving money, security, conservatism, scarcity, control",
+    meaning_reversed: "Over-spending, greed, self-protection",
+    description: "A figure clutches four pentacles tightly.",
+    image: "/cards/pentacles-4.jpg"
+  },
+  {
+    id: "pentacles-5",
+    name: "Five of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "5",
+    meaning_upright: "Financial loss, poverty, lack mindset, isolation, worry",
+    meaning_reversed: "Recovery from financial loss, spiritual poverty",
+    description: "Two destitute figures walk in snow past a stained glass window.",
+    image: "/cards/pentacles-5.jpg"
+  },
+  {
+    id: "pentacles-6",
+    name: "Six of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "6",
+    meaning_upright: "Giving, receiving, sharing wealth, generosity, charity",
+    meaning_reversed: "Self-care, unpaid debt, one-sided charity",
+    description: "A merchant weighs money to give to beggars.",
+    image: "/cards/pentacles-6.jpg"
+  },
+  {
+    id: "pentacles-7",
+    name: "Seven of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "7",
+    meaning_upright: "Long-term view, sustainable results, perseverance, investment",
+    meaning_reversed: "Lack of long-term vision, limited success or reward",
+    description: "A farmer leans on his hoe, looking at his crop of pentacles.",
+    image: "/cards/pentacles-7.jpg"
+  },
+  {
+    id: "pentacles-8",
+    name: "Eight of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "8",
+    meaning_upright: "Apprenticeship, repetitive tasks, mastery, skill development",
+    meaning_reversed: "Self-development, perfectionism, misdirected activity",
+    description: "A craftsman works diligently on engraving pentacles.",
+    image: "/cards/pentacles-8.jpg"
+  },
+  {
+    id: "pentacles-9",
+    name: "Nine of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "9",
+    meaning_upright: "Abundance, luxury, self-sufficiency, financial independence",
+    meaning_reversed: "Self-worth, over-investment in work, hustling",
+    description: "A woman stands in a vineyard with a falcon.",
+    image: "/cards/pentacles-9.jpg"
+  },
+  {
+    id: "pentacles-10",
+    name: "Ten of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "10",
+    meaning_upright: "Wealth, financial security, family, long-term success, contribution",
+    meaning_reversed: "The dark side of wealth, financial failure or loss",
+    description: "An old man sits in an archway with family and dogs.",
+    image: "/cards/pentacles-10.jpg"
+  },
+  {
+    id: "pentacles-page",
+    name: "Page of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "Page",
+    meaning_upright: "Manifestation, financial opportunity, skill development",
+    meaning_reversed: "Lack of progress, procrastination, learn from failure",
+    description: "A youth examines a pentacle carefully.",
+    image: "/cards/pentacles-page.jpg"
+  },
+  {
+    id: "pentacles-knight",
+    name: "Knight of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "Knight",
+    meaning_upright: "Hard work, productivity, routine, conservatism",
+    meaning_reversed: "Self-discipline, boredom, feeling 'stuck', perfectionism",
+    description: "A knight sits on a heavy horse, holding a pentacle.",
+    image: "/cards/pentacles-knight.jpg"
+  },
+  {
+    id: "pentacles-queen",
+    name: "Queen of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "Queen",
+    meaning_upright: "Nurturing, practical, providing financially, a working parent",
+    meaning_reversed: "Financial independence, self-care, work-home conflict",
+    description: "A queen sits on a throne amidst nature, holding a pentacle.",
+    image: "/cards/pentacles-queen.jpg"
+  },
+  {
+    id: "pentacles-king",
+    name: "King of Pentacles",
+    arcana: "minor",
+    suit: "pentacles",
+    value: "King",
+    meaning_upright: "Wealth, business, leadership, security, discipline, abundance",
+    meaning_reversed: "Financially inept, obsessed with wealth and status, stubborn",
+    description: "A king sits on a throne adorned with bulls, holding a pentacle.",
+    image: "/cards/pentacles-king.jpg"
+  }
+];
+
+export const MAJOR_ARCANA = CARDS.filter(c => c.arcana === 'major');
