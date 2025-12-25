@@ -22,6 +22,10 @@ export interface Spread {
   id: string;
   name: string;
   description: string;
+  detail?: string;
+  difficulty?: 'beginner' | 'easy' | 'medium' | 'advanced';
+  recommended?: boolean;
+  tags?: string[];
   positions: SpreadPosition[];
 }
 
