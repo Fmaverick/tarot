@@ -21,10 +21,12 @@ interface TarotState {
   language: 'en' | 'zh';
   chatHistory: Message[];
   currentQuestion: string;
+  isLoadingHistory: boolean;
   
   // Actions
   setLanguage: (lang: 'en' | 'zh') => void;
   setQuestion: (question: string) => void;
+  setLoadingHistory: (isLoading: boolean) => void;
   initializeDeck: () => void;
   selectSpread: (spreadId: string) => void;
   placeCard: (card: TarotCard, positionId: string, isReversed: boolean) => void;
@@ -44,9 +46,11 @@ export const useStore = create<TarotState>((set, get) => ({
   language: 'en',
   chatHistory: [],
   currentQuestion: "",
+  isLoadingHistory: false,
 
   setLanguage: (lang) => set({ language: lang }),
   setQuestion: (question) => set({ currentQuestion: question }),
+  setLoadingHistory: (isLoading) => set({ isLoadingHistory: isLoading }),
 
   loadSession: (spreadId, placedCards, sessionId, history, question) => {
     const spread = SPREADS.find(s => s.id === spreadId) || SPREADS[0];

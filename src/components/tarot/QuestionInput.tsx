@@ -28,12 +28,10 @@ export function QuestionInput() {
       >
         <div className="space-y-2">
           <h2 className="text-3xl font-serif text-black/80">
-            {language === 'zh' ? '心中默念你的问题' : 'Focus on your question'}
+            {t.question.title}
           </h2>
           <p className="text-sm text-black/50">
-            {language === 'zh' 
-              ? '保持专注，将你的意念注入即将抽取的卡牌中' 
-              : 'Hold the question in your mind as you prepare to draw'}
+            {t.question.subtitle}
           </p>
         </div>
 
@@ -48,6 +46,19 @@ export function QuestionInput() {
             />
             {/* Custom Bottom Border with Gradient Fade */}
             <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 to-transparent peer-focus-visible:via-black/50 transition-all duration-300" />
+          </div>
+
+          <div className="flex flex-wrap gap-2 justify-center">
+            {t.question.presets.map((q, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setInput(q)}
+                className="text-xs px-3 py-1.5 rounded-full border border-black/10 hover:border-black/30 hover:bg-black/5 transition-colors text-black/60 font-serif"
+              >
+                {q}
+              </button>
+            ))}
           </div>
 
           <Button 

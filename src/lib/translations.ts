@@ -44,6 +44,13 @@ export const translations = {
       subtitle: "Hold the question in your mind as you prepare to draw",
       button: "Begin Drawing",
       current: "Current Question",
+      presets: [
+        "What should I know about my career?",
+        "How can I improve my relationship?",
+        "What is blocking my growth?",
+        "Daily guidance for today",
+        "What is the outcome of this situation?"
+      ]
     },
     auth: {
       login_required: "Sign in to Consult",
@@ -108,6 +115,13 @@ export const translations = {
       subtitle: "保持专注，将你的意念注入即将抽取的卡牌中",
       button: "开始抽牌",
       current: "当前问题",
+      presets: [
+        "关于事业发展，我需要知道什么？",
+        "我该如何改善亲密关系？",
+        "当下什么在阻碍我的成长？",
+        "今日指引",
+        "这件事的结果会如何？"
+      ]
     },
     auth: {
       login_required: "登录以咨询",

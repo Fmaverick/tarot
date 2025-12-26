@@ -28,6 +28,13 @@ export default function Home() {
     document.title = t.app.title;
   }, [t]);
 
+  // Auto-start if a spread is selected (e.g. from history)
+  React.useEffect(() => {
+    if (selectedSpread) {
+      setHasStarted(true);
+    }
+  }, [selectedSpread]);
+
   return (
     <main className="min-h-screen bg-[#fcfcfc] text-black font-sans overflow-hidden selection:bg-black/5 relative">
       {/* Header */}

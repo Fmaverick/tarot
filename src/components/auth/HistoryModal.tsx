@@ -14,6 +14,7 @@ interface Session {
   spreadId: string;
   cardsDrawn: {
     cardId: string;
+    positionId: string;
     isReversed: boolean;
   }[];
 }
@@ -26,7 +27,7 @@ interface HistoryModalProps {
 export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { language, loadSession } = useStore();
+  const { language, loadSession, setLoadingHistory } = useStore();
   const t = getTranslation(language);
 
   useEffect(() => {
@@ -42,27 +43,35 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
   }, [open]);
 
   const handleSessionClick = async (sessionId: string) => {
-    setIsLoading(true);
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session) return;
+
+    // 1. Immediate UI update with available data
+    const placedCards: Record<string, PlacedCard> = {};
+    if (session.cardsDrawn) {
+        session.cardsDrawn.forEach((cd) => {
+            const card = CARDS.find(c => c.id === cd.cardId);
+            if (card) {
+                placedCards[cd.positionId] = {
+                    card,
+                    positionId: cd.positionId,
+                    isReversed: cd.isReversed
+                };
+            }
+        });
+    }
+
+    // Load with empty history first to show the board immediately
+    loadSession(session.spreadId, placedCards, sessionId, [], session.question);
+    onOpenChange(false);
+    setLoadingHistory(true);
+
+    // 2. Fetch full details (messages) in background
     try {
       const res = await fetch(`/api/sessions/${sessionId}`);
       const data = await res.json();
       
       if (data.session && data.messages) {
-        // Convert cardsDrawn to placedCards
-        const placedCards: Record<string, PlacedCard> = {};
-        if (data.session.cardsDrawn) {
-            data.session.cardsDrawn.forEach((cd: { cardId: string; positionId: string; isReversed: boolean }) => {
-                const card = CARDS.find(c => c.id === cd.cardId);
-                if (card) {
-                    placedCards[cd.positionId] = {
-                        card,
-                        positionId: cd.positionId,
-                        isReversed: cd.isReversed
-                    };
-                }
-            });
-        }
-
         // Convert messages to Chat Message format
         const history = data.messages.map((m: { id: number; role: 'user' | 'assistant'; content: string; createdAt: string }) => ({
             id: m.id.toString(),
@@ -71,13 +80,13 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
             createdAt: new Date(m.createdAt)
         }));
 
-        loadSession(data.session.spreadId, placedCards, sessionId, history, data.session.question);
-        onOpenChange(false); // Close modal
+        // Update session with loaded history
+        loadSession(session.spreadId, placedCards, sessionId, history, session.question);
       }
     } catch (error) {
-      console.error("Failed to load session", error);
+      console.error("Failed to load session details", error);
     } finally {
-      setIsLoading(false);
+      setLoadingHistory(false);
     }
   };
 

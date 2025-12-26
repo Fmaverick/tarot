@@ -4,7 +4,7 @@ import { useStore } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowUp, X } from "lucide-react";
+import { ArrowUp, X, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -24,12 +24,14 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ onClose }: ChatInterfaceProps) {
-  const { selectedSpread, placedCards, isReading, startReading, sessionId, language, chatHistory, currentQuestion, setQuestion } = useStore();
+  const { selectedSpread, placedCards, isReading, startReading, sessionId, language, chatHistory, currentQuestion, setQuestion, isLoadingHistory } = useStore();
   const t = getTranslation(language);
   const { user } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLoginReminder, setShowLoginReminder] = useState(false);
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastProcessedMessageId = useRef<string | null>(null);
 
   const { messages, append, input, handleInputChange, handleSubmit, isLoading, setInput, setMessages } = useChat({
     api: "/api/chat",
@@ -43,6 +45,46 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
     },
     initialMessages: chatHistory,
   });
+
+  // Clear suggestions when loading starts
+  useEffect(() => {
+    if (isLoading) {
+      setSuggestedQuestions([]);
+    }
+  }, [isLoading]);
+
+  // Fetch suggestions when AI finishes responding
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (!isLoading && messages.length > 0) {
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage.role === 'assistant' && lastMessage.id !== lastProcessedMessageId.current) {
+          lastProcessedMessageId.current = lastMessage.id;
+          try {
+            const response = await fetch('/api/chat/suggestions', {
+              method: 'POST',
+              body: JSON.stringify({
+                messages: messages,
+                context: {
+                  spread: selectedSpread,
+                  cards: Object.values(placedCards),
+                  question: currentQuestion,
+                }
+              })
+            });
+            const data = await response.json();
+            if (data.questions && Array.isArray(data.questions)) {
+              setSuggestedQuestions(data.questions);
+            }
+          } catch (error) {
+            console.error('Failed to fetch suggestions:', error);
+          }
+        }
+      }
+    };
+
+    fetchSuggestions();
+  }, [isLoading, messages, selectedSpread, placedCards, currentQuestion]);
 
   // Auto-start reading when component mounts if not already reading
   useEffect(() => {
@@ -70,7 +112,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
 
   // Sync chat history when it changes (e.g. loading a session)
   useEffect(() => {
-    if (chatHistory && chatHistory.length > 0) {
+    if (chatHistory) {
         setMessages(chatHistory);
     }
   }, [chatHistory, setMessages]);
@@ -119,6 +161,29 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
     return isReading ? handleSubmit(e) : handleStartReading(e);
   };
 
+  const handleSuggestionClick = async (question: string) => {
+    if (!user) {
+        setShowLoginReminder(true);
+        return;
+    }
+    
+    setSuggestedQuestions([]);
+    setQuestion(question);
+    
+    await append({
+      role: "user",
+      content: question,
+    }, {
+      body: {
+        context: {
+          spread: selectedSpread,
+          cards: Object.values(placedCards),
+          question: question,
+        },
+      },
+    });
+  };
+
   // Chat View
   return (
     <div className="w-full h-full flex flex-col relative bg-white/50 backdrop-blur-sm rounded-3xl overflow-hidden">
@@ -158,6 +223,11 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
               </div>
             </motion.div>
           ))}
+          {isLoadingHistory && (
+             <div className="flex justify-center py-4 w-full">
+               <Loader2 className="w-5 h-5 animate-spin text-black/20" />
+             </div>
+          )}
           {isLoading && (
              <div className="flex items-center gap-2 py-2">
                <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" />
@@ -165,6 +235,26 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:0.4s]" />
              </div>
           )}
+          
+          {/* Suggested Questions */}
+          {suggestedQuestions.length > 0 && !isLoading && (
+            <div className="flex flex-wrap gap-2 w-full justify-start pt-2 pb-4">
+               
+               {suggestedQuestions.map((q, idx) => (
+                 <motion.button
+                   initial={{ opacity: 0, y: 5 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: idx * 0.1 }}
+                   key={idx}
+                   onClick={() => handleSuggestionClick(q)}
+                   className="text-sm text-left bg-white/40 border border-black/5 hover:bg-white/80 hover:border-black/10 text-black/70 px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow-md backdrop-blur-sm"
+                 >
+                   {q}
+                 </motion.button>
+               ))}
+            </div>
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
       </div>
