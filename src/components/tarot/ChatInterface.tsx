@@ -4,11 +4,13 @@ import { useStore } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowUp, X, Loader2 } from "lucide-react";
+import { ArrowUp, X, Loader2, Share2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAuthStore } from "@/store/useAuthStore";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ShareModal } from "./ShareModal";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +34,11 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastProcessedMessageId = useRef<string | null>(null);
+
+  // Share & Selection State
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set());
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const { messages, append, input, handleInputChange, handleSubmit, isLoading, setInput, setMessages } = useChat({
     api: "/api/chat",
@@ -184,11 +191,51 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
     });
   };
 
+  const toggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    setSelectedMessageIds(new Set());
+  };
+
+  const toggleMessageSelection = (id: string) => {
+    const newSelected = new Set(selectedMessageIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedMessageIds(newSelected);
+  };
+
   // Chat View
   return (
     <div className="w-full h-full flex flex-col relative bg-white/50 backdrop-blur-sm rounded-3xl overflow-hidden">
       {/* Header - Minimal */}
-      <div className="absolute top-4 right-4 z-50">
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+        {isSelectionMode ? (
+            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 shadow-sm border border-black/5">
+              <Button variant="ghost" size="sm" onClick={() => setIsSelectionMode(false)} className="h-7 text-xs px-2">
+                {t.chat.cancel_select || "Cancel"}
+              </Button>
+              <div className="w-[1px] h-4 bg-black/10" />
+              <Button 
+                size="sm" 
+                onClick={() => setShowShareModal(true)} 
+                disabled={selectedMessageIds.size === 0}
+                className="h-7 text-xs px-3 bg-black text-white hover:bg-black/80"
+              >
+                {t.chat.confirm_share || "Share"} ({selectedMessageIds.size})
+              </Button>
+            </div>
+        ) : (
+            <button 
+                onClick={toggleSelectionMode}
+                className="p-2 hover:bg-black/5 rounded-full transition-colors bg-white/50 backdrop-blur-sm group"
+                title={t.chat.share_button || "Share"}
+            >
+                <Share2 className="w-4 h-4 opacity-50 group-hover:opacity-80 transition-opacity" />
+            </button>
+        )}
+        
         <button 
             onClick={onClose}
             className="p-2 hover:bg-black/5 rounded-full transition-colors bg-white/50 backdrop-blur-sm"
@@ -201,27 +248,38 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
       <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6 flex flex-col mask-image-gradient">
         <div className="w-full space-y-6 pb-4">
           {messages.map((m) => (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              key={m.id} 
-              className="flex flex-col gap-2 w-full items-start"
-            >
-              <div className={cn(
-                "py-2 text-sm leading-relaxed text-left max-w-none",
-                m.role === "user" 
-                  ? "text-black font-medium font-serif whitespace-pre-wrap" 
-                  : "text-black/80 prose prose-neutral prose-sm prose-p:font-serif prose-headings:font-serif prose-headings:font-normal prose-strong:font-medium prose-a:text-black prose-a:underline prose-li:marker:text-black/40"
-              )}>
-                {m.role === "user" ? (
-                  m.content
-                ) : (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {m.content}
-                  </ReactMarkdown>
-                )}
-              </div>
-            </motion.div>
+            <div key={m.id} className="flex gap-3 w-full group">
+               {isSelectionMode && (
+                   <div className="pt-2 pl-1 animate-in fade-in slide-in-from-left-2 duration-200">
+                     <Checkbox 
+                        checked={selectedMessageIds.has(m.id)}
+                        onCheckedChange={() => toggleMessageSelection(m.id)}
+                        className="data-[state=checked]:bg-black data-[state=checked]:border-black"
+                     />
+                   </div>
+               )}
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={cn("flex flex-col gap-2 w-full items-start transition-all duration-300", isSelectionMode && "cursor-pointer hover:opacity-80")}
+                  onClick={() => isSelectionMode && toggleMessageSelection(m.id)}
+                >
+                  <div className={cn(
+                    "py-2 text-sm leading-relaxed text-left max-w-none w-full",
+                    m.role === "user" 
+                      ? "text-black font-medium font-serif whitespace-pre-wrap" 
+                      : "text-black/80 prose prose-neutral prose-sm prose-p:font-serif prose-headings:font-serif prose-headings:font-normal prose-strong:font-medium prose-a:text-black prose-a:underline prose-li:marker:text-black/40"
+                  )}>
+                    {m.role === "user" ? (
+                      m.content
+                    ) : (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {m.content}
+                      </ReactMarkdown>
+                    )}
+                  </div>
+                </motion.div>
+            </div>
           ))}
           {isLoadingHistory && (
              <div className="flex justify-center py-4 w-full">
@@ -237,7 +295,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
           )}
           
           {/* Suggested Questions */}
-          {suggestedQuestions.length > 0 && !isLoading && (
+          {suggestedQuestions.length > 0 && !isLoading && !isSelectionMode && (
             <div className="flex flex-wrap gap-2 w-full justify-start pt-2 pb-4">
                
                {suggestedQuestions.map((q, idx) => (
@@ -260,41 +318,43 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
       </div>
 
       {/* Input - At Bottom */}
-      <div className="p-4 pt-2 lg:p-6 lg:pt-2">
-        <motion.form 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          onSubmit={handleFormSubmit} 
-          className="relative flex flex-col gap-2"
-        >
-          <div className="relative">
-            <textarea
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleFormSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
-                }
-              }}
-              placeholder={isReading ? t.chat.placeholder_followup : t.chat.placeholder_start}
-              className="w-full h-24 p-4 bg-transparent focus:outline-none resize-none text-sm font-light placeholder:text-black/40"
-            />
-            
-            {/* Custom Bottom Border */}
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-black/20 to-transparent" />
-
-            <Button 
-              type="submit"
-              size="icon"
-              disabled={isLoading || !input.trim()}
-              className="absolute right-3 bottom-3 h-8 w-8 rounded-lg bg-black text-white hover:bg-black/80 shadow-md transition-all"
+      {!isSelectionMode && (
+          <div className="p-4 pt-2 lg:p-6 lg:pt-2">
+            <motion.form 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              onSubmit={handleFormSubmit} 
+              className="relative flex flex-col gap-2"
             >
-              <ArrowUp className="w-4 h-4" />
-            </Button>
+              <div className="relative">
+                <textarea
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleFormSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+                    }
+                  }}
+                  placeholder={isReading ? t.chat.placeholder_followup : t.chat.placeholder_start}
+                  className="w-full h-24 p-4 bg-transparent focus:outline-none resize-none text-sm font-light placeholder:text-black/40"
+                />
+                
+                {/* Custom Bottom Border */}
+                <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-black/20 to-transparent" />
+
+                <Button 
+                  type="submit"
+                  size="icon"
+                  disabled={isLoading || !input.trim()}
+                  className="absolute right-3 bottom-3 h-8 w-8 rounded-lg bg-black text-white hover:bg-black/80 shadow-md transition-all"
+                >
+                  <ArrowUp className="w-4 h-4" />
+                </Button>
+              </div>
+            </motion.form>
           </div>
-        </motion.form>
-      </div>
+      )}
       
       {/* Login Reminder */}
       <Dialog open={showLoginReminder} onOpenChange={setShowLoginReminder}>
@@ -320,6 +380,15 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
       </Dialog>
 
       <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
+      
+      <ShareModal 
+        open={showShareModal} 
+        onOpenChange={setShowShareModal}
+        selectedMessages={messages.filter(m => selectedMessageIds.has(m.id))}
+        placedCards={placedCards}
+        spread={selectedSpread}
+        question={currentQuestion}
+      />
     </div>
   );
 }
