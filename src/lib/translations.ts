@@ -47,6 +47,9 @@ export const translations = {
       copied: "Copied!",
       close: "Close",
       preview: "Preview",
+      quote_action: "Share Quote",
+      quote_title: "Share Quote",
+      save_image: "Save Image",
     },
     deck: {
       draw_instruction: "Draw a card",
@@ -132,6 +135,9 @@ export const translations = {
       copied: "已复制！",
       close: "关闭",
       preview: "预览",
+      quote_action: "分享金句",
+      quote_title: "分享金句",
+      save_image: "保存图片",
     },
     deck: {
       draw_instruction: "抽取一张牌",

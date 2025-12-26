@@ -4,13 +4,15 @@ import { useStore } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowUp, X, Loader2, Share2 } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ArrowUp, X, Loader2, Share2, Quote } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAuthStore } from "@/store/useAuthStore";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ShareModal } from "./ShareModal";
+import { QuoteShareModal } from "./QuoteShareModal";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +35,14 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
   const [showLoginReminder, setShowLoginReminder] = useState(false);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const lastProcessedMessageId = useRef<string | null>(null);
+
+  // Quote Share State
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
+  const [selectedText, setSelectedText] = useState("");
+  const [quoteToShare, setQuoteToShare] = useState("");
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
 
   // Share & Selection State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -92,6 +101,96 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
 
     fetchSuggestions();
   }, [isLoading, messages, selectedSpread, placedCards, currentQuestion]);
+
+  // Handle Text Selection
+  useEffect(() => {
+    const handleMouseUp = () => {
+      const selection = window.getSelection();
+      
+      if (!selection || selection.isCollapsed) {
+        setSelectionRect(null);
+        setSelectedText("");
+        return;
+      }
+
+      const text = selection.toString().trim();
+      
+      if (!text) {
+        setSelectionRect(null);
+        setSelectedText("");
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      
+      // Check if selection is within chat container
+      // Use commonAncestorContainer and check if it's inside chatContainerRef
+      if (chatContainerRef.current && chatContainerRef.current.contains(range.commonAncestorContainer)) {
+        const rect = range.getBoundingClientRect();
+        
+        // Ensure the selection is actually visible/valid
+        if (rect.width > 0 && rect.height > 0) {
+            setSelectionRect(rect);
+            setSelectedText(text);
+        }
+      } else {
+        // Optional: Allow selection if it intersects with the container
+        // This helps when commonAncestorContainer is higher up (e.g. user selected text across multiple blocks)
+        if (chatContainerRef.current) {
+            const containerRect = chatContainerRef.current.getBoundingClientRect();
+            const rect = range.getBoundingClientRect();
+            
+            // Simple intersection check
+            const intersects = !(rect.right < containerRect.left || 
+                               rect.left > containerRect.right || 
+                               rect.bottom < containerRect.top || 
+                               rect.top > containerRect.bottom);
+            
+            if (intersects && rect.width > 0 && rect.height > 0) {
+                setSelectionRect(rect);
+                setSelectedText(text);
+            } else {
+                setSelectionRect(null);
+                setSelectedText("");
+            }
+        }
+      }
+    };
+
+    const handleSelectionChange = () => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) {
+            setSelectionRect(null);
+            setSelectedText("");
+        }
+    };
+
+    // Update position on scroll
+    const handleScroll = () => {
+        if (selectionRect) {
+             // Hide button on scroll to prevent misalignment, force user to re-select or wait for mouseup
+             // Or better: update position if possible. 
+             // Since rect is static, let's just hide it on scroll for better UX (like native menus)
+             setSelectionRect(null);
+             setSelectedText("");
+        }
+    };
+
+    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("keyup", handleMouseUp); // For keyboard selection
+    document.addEventListener("selectionchange", handleSelectionChange);
+    window.addEventListener("scroll", handleScroll, true);
+    // Also listen to touch end for mobile support
+    document.addEventListener("touchend", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("keyup", handleMouseUp);
+      document.removeEventListener("selectionchange", handleSelectionChange);
+      window.removeEventListener("scroll", handleScroll, true);
+      document.removeEventListener("touchend", handleMouseUp);
+    };
+  }, [selectionRect]);
 
   // Auto-start reading when component mounts if not already reading
   useEffect(() => {
@@ -245,7 +344,10 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6 flex flex-col mask-image-gradient">
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6 flex flex-col mask-image-gradient"
+      >
         <div className="w-full space-y-6 pb-4">
           {messages.map((m) => (
             <div key={m.id} className="flex gap-3 w-full group">
@@ -387,6 +489,43 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
         selectedMessages={messages.filter(m => selectedMessageIds.has(m.id))}
         placedCards={placedCards}
         spread={selectedSpread}
+        question={currentQuestion}
+      />
+
+      {/* Floating Quote Share Button */}
+      {selectionRect && selectedText && !isSelectionMode && createPortal(
+          <div 
+            className="fixed z-[9999] animate-in fade-in zoom-in duration-200 pointer-events-auto"
+            style={{
+                top: Math.max(10, selectionRect.top - 50),
+                left: selectionRect.left + selectionRect.width / 2,
+                transform: 'translateX(-50%)'
+            }}
+          >
+             <Button 
+                size="sm" 
+                onClick={(e) => {
+                    e.stopPropagation(); // Prevent clearing selection
+                    setQuoteToShare(selectedText);
+                    setShowQuoteModal(true);
+                    // Clear selection to hide button and highlight
+                    window.getSelection()?.removeAllRanges();
+                }}
+                className="bg-black text-white hover:bg-black/90 shadow-xl rounded-full px-4 h-9 gap-2 text-xs font-medium relative z-10"
+             >
+                <Quote className="w-3.5 h-3.5" />
+                 {t.share.quote_action}
+              </Button>
+             {/* Arrow/Triangle pointing down */}
+             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45" />
+          </div>,
+          document.body
+      )}
+
+      <QuoteShareModal 
+        open={showQuoteModal} 
+        onOpenChange={setShowQuoteModal}
+        quote={quoteToShare}
         question={currentQuestion}
       />
     </div>
