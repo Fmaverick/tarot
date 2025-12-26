@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { SpreadSelector } from "@/components/tarot/SpreadSelector";
+import { QuestionInput } from "@/components/tarot/QuestionInput";
 import { SpreadBoard } from "@/components/tarot/SpreadBoard";
 import { InteractiveDeck } from "@/components/tarot/InteractiveDeck";
 import { ChatInterface } from "@/components/tarot/ChatInterface";
@@ -15,7 +16,7 @@ import { UserMenu } from "@/components/auth/UserMenu";
 import { Hero } from "@/components/tarot/Hero";
 
 export default function Home() {
-  const { selectedSpread, placedCards, resetReading, clearSpread, isReading, language, setLanguage } = useStore();
+  const { selectedSpread, placedCards, resetReading, clearSpread, isReading, language, setLanguage, currentQuestion } = useStore();
   const t = getTranslation(language);
   const [hasStarted, setHasStarted] = useState(false);
 
@@ -87,6 +88,16 @@ export default function Home() {
             >
               <SpreadSelector />
             </motion.div>
+          ) : !currentQuestion ? (
+            <motion.div
+              key="question"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="flex-1 w-full flex items-center justify-center"
+            >
+              <QuestionInput />
+            </motion.div>
           ) : (
             <motion.div
               key="board"
@@ -102,6 +113,18 @@ export default function Home() {
                  "w-full transition-all duration-500 flex flex-col items-center justify-center",
                  isFull ? "h-auto lg:h-full" : ""
                )}>
+                  {/* Question Display */}
+                  {!isFull && currentQuestion && (
+                     <div className="mb-4 text-center px-4 animate-in fade-in slide-in-from-top-4 duration-700">
+                        <p className="text-xs uppercase tracking-widest text-black/30 mb-2">
+                           {t.question.current}
+                        </p>
+                        <h3 className="text-xl md:text-2xl font-serif text-black/60 italic">
+                           &ldquo;{currentQuestion}&rdquo;
+                        </h3>
+                     </div>
+                  )}
+
                   <SpreadBoard />
                   
                   {/* Deck (only if not full and not reading) */}

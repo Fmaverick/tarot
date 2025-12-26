@@ -39,6 +39,12 @@ export const translations = {
       drag_instruction: "Drag cards to the spread",
       shuffle_instruction: "Shuffle the deck",
     },
+    question: {
+      title: "Focus on your question",
+      subtitle: "Hold the question in your mind as you prepare to draw",
+      button: "Begin Drawing",
+      current: "Current Question",
+    },
     auth: {
       login_required: "Sign in to Consult",
       login_message: "Please sign in to start the AI interpretation of your spread.",
@@ -96,6 +102,12 @@ export const translations = {
       draw_instruction: "抽取一张牌",
       drag_instruction: "拖动牌到牌阵",
       shuffle_instruction: "洗牌",
+    },
+    question: {
+      title: "心中默念你的问题",
+      subtitle: "保持专注，将你的意念注入即将抽取的卡牌中",
+      button: "开始抽牌",
+      current: "当前问题",
     },
     auth: {
       login_required: "登录以咨询",

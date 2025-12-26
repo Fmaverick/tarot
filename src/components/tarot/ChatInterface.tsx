@@ -44,6 +44,30 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
     initialMessages: chatHistory,
   });
 
+  // Auto-start reading when component mounts if not already reading
+  useEffect(() => {
+    if (!isReading && currentQuestion && messages.length === 0) {
+      if (!user) {
+        setShowLoginReminder(true);
+        return;
+      }
+
+      startReading();
+      append({
+        role: "user",
+        content: currentQuestion,
+      }, {
+        body: {
+          context: {
+            spread: selectedSpread,
+            cards: Object.values(placedCards),
+            question: currentQuestion,
+          },
+        },
+      });
+    }
+  }, [isReading, currentQuestion, messages.length, user, startReading, append, selectedSpread, placedCards]);
+
   // Sync chat history when it changes (e.g. loading a session)
   useEffect(() => {
     if (chatHistory && chatHistory.length > 0) {
