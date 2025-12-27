@@ -3,7 +3,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { AuthModal } from './AuthModal';
 import { HistoryModal } from './HistoryModal';
-import { User, LogOut, Coins, History } from 'lucide-react';
+import { RedeemModal } from './RedeemModal';
+import { User, LogOut, Coins, History, Gift } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { getTranslation } from '@/lib/i18n';
@@ -20,6 +21,7 @@ export function UserMenu() {
   const { user, isLoading, fetchUser, logout } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showRedeemModal, setShowRedeemModal] = useState(false);
   const { language } = useStore();
   const t = getTranslation(language);
 
@@ -65,6 +67,10 @@ export function UserMenu() {
                 <History className="mr-2 h-4 w-4" />
                 <span>{t.auth.history}</span>
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowRedeemModal(true)} className="cursor-pointer">
+                <Gift className="mr-2 h-4 w-4" />
+                <span>{t.auth.redeem_code}</span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => logout()} className="cursor-pointer text-red-500 focus:text-red-500">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -74,6 +80,7 @@ export function UserMenu() {
           </DropdownMenu>
         </div>
         <HistoryModal open={showHistoryModal} onOpenChange={setShowHistoryModal} />
+        <RedeemModal open={showRedeemModal} onOpenChange={setShowRedeemModal} />
     </>
   );
 }

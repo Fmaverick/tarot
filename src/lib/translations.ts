@@ -87,6 +87,10 @@ export const translations = {
       history: "History",
       logout: "Logout",
       confirm_delete: "Are you sure you want to delete this session?",
+      redeem_code: "Redeem Code",
+      enter_code: "Enter redemption code",
+      redeem: "Redeem",
+      redeem_success: "Redeemed successfully!",
     },
   },
   zh: {
@@ -176,6 +180,10 @@ export const translations = {
       history: "历史",
       logout: "退出登录",
       confirm_delete: "确定要删除这条记录吗？",
+      redeem_code: "兑换码",
+      enter_code: "输入兑换码",
+      redeem: "兑换",
+      redeem_success: "兑换成功！",
     },
   }
 };

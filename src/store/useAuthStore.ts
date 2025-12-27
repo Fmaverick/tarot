@@ -13,9 +13,10 @@ interface AuthState {
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
+  redeemCode: (code: string) => Promise<{ success: boolean; pointsAdded: number; newBalance: number }>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isLoading: true,
 
@@ -71,5 +72,28 @@ export const useAuthStore = create<AuthState>((set) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  redeemCode: async (code) => {
+    const res = await fetch('/api/redeem', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Redemption failed');
+    }
+    
+    const data = await res.json();
+    
+    // Update local user balance
+    const currentUser = get().user;
+    if (currentUser) {
+        set({ user: { ...currentUser, creditBalance: data.newBalance } });
+    }
+
+    return data;
   },
 }));

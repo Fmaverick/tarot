@@ -1,0 +1,12 @@
+-- CREATE TABLE "redemption_codes" (
+-- 	"id" serial PRIMARY KEY NOT NULL,
+-- 	"code" text NOT NULL,
+-- 	"points" integer NOT NULL,
+-- 	"is_used" boolean DEFAULT false NOT NULL,
+-- 	"used_by" integer,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"used_at" timestamp,
+-- 	CONSTRAINT "redemption_codes_code_unique" UNIQUE("code")
+-- );
+-- --> statement-breakpoint
+-- ALTER TABLE "redemption_codes" ADD CONSTRAINT "redemption_codes_used_by_users_id_fk" FOREIGN KEY ("used_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
