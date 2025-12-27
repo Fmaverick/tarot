@@ -152,8 +152,27 @@ async function handleSubscriptionChange(event: Stripe.Event) {
     }
 
     if (newPlan !== user.plan) {
+      console.log(`[Stripe Webhook] Plan mismatch detected for user ${user.id}: current=${user.plan}, new=${newPlan}`);
+      
+      const planConfig = PRICING_PLANS[newPlan];
+      let creditsToAdd = 0;
+      
+      if (planConfig && planConfig.features.aiReadings.type === 'month') {
+          creditsToAdd = planConfig.features.aiReadings.limit;
+      }
+
+      console.log(`[Stripe Webhook] Upgrading user ${user.id} to ${newPlan}, adding ${creditsToAdd} credits.`);
+
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
       await db.update(users)
-        .set({ plan: newPlan })
+        .set({ 
+          plan: newPlan,
+          creditBalance: user.creditBalance + creditsToAdd,
+          creditsExpiresAt: expiresAt,
+          aiReadingsUsage: 0,
+          consultationUsage: 0,
+        })
         .where(eq(users.id, user.id));
     }
   } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
