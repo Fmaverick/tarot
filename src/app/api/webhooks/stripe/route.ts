@@ -19,6 +19,7 @@ export async function POST(req: Request) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
+    console.log(`[Stripe Webhook] Received event: ${event.type}, id: ${event.id}`);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`Webhook signature verification failed: ${errorMessage}`);
@@ -84,6 +85,7 @@ export async function POST(req: Request) {
 }
 
 async function handleSubscriptionChange(event: Stripe.Event) {
+  console.log(`[Stripe Webhook] Handling subscription change: ${event.type}`);
   const subscription = event.data.object as Stripe.Subscription;
   const customerId = subscription.customer as string;
 
@@ -165,34 +167,42 @@ async function handleSubscriptionChange(event: Stripe.Event) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  console.log(`[Stripe Webhook] Handling checkout.session.completed for session: ${session.id}`);
+
   if (!session.metadata?.userId || !session.metadata?.plan) {
-    console.log('Missing metadata in checkout session');
+    console.log('[Stripe Webhook] Missing metadata in checkout session', session.metadata);
     return;
   }
 
   const userId = parseInt(session.metadata.userId);
   const plan = session.metadata.plan as PlanLevel;
   
+  console.log(`[Stripe Webhook] Metadata - userId: ${userId}, plan: ${plan}`);
+
   const user = await db.query.users.findFirst({
     where: eq(users.id, userId),
   });
 
   if (!user) {
-    console.log(`User not found: ${userId}`);
+    console.log(`[Stripe Webhook] User not found: ${userId}`);
     return;
   }
 
   const planConfig = PRICING_PLANS[plan];
   if (!planConfig) {
-     console.log(`Invalid plan in metadata: ${plan}`);
+     console.log(`[Stripe Webhook] Invalid plan in metadata: ${plan}`);
      return;
   }
+
+  console.log(`[Stripe Webhook] Plan config found for ${plan}`);
 
   // Calculate credits to add
   let creditsToAdd = 0;
   if (planConfig.features.aiReadings.type === 'month') {
       creditsToAdd = planConfig.features.aiReadings.limit;
   }
+
+  console.log(`[Stripe Webhook] Credits to add: ${creditsToAdd}`);
 
   // Calculate expiration date (1 month from now)
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -208,36 +218,48 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     })
     .where(eq(users.id, userId));
     
-  console.log(`Processed checkout session for user ${userId}: Added ${creditsToAdd} credits, expires at ${expiresAt.toISOString()}.`);
+  console.log(`[Stripe Webhook] Processed checkout session for user ${userId}: Added ${creditsToAdd} credits, new balance: ${user.creditBalance + creditsToAdd}, expires at ${expiresAt.toISOString()}.`);
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
+  console.log(`[Stripe Webhook] Handling invoice.paid for invoice: ${invoice.id}`);
+
   // Use type assertion to access subscription safely
   const inv = invoice as unknown as { subscription: string | null; customer: string | null };
-  if (!inv.subscription) return;
+  if (!inv.subscription) {
+    console.log(`[Stripe Webhook] Invoice has no subscription, skipping.`);
+    return;
+  }
 
   // Skip if this is a subscription creation or update (handled by checkout.session.completed)
   // We only want to handle recurring payments (renewals) here
   if (invoice.billing_reason === 'subscription_create' || invoice.billing_reason === 'subscription_update') {
-    console.log(`Skipping invoice.paid for ${invoice.billing_reason} (handled by checkout): ${invoice.id}`);
+    console.log(`[Stripe Webhook] Skipping invoice.paid for ${invoice.billing_reason} (handled by checkout): ${invoice.id}`);
     return;
   }
   
   const customerId = inv.customer;
-  if (!customerId) return;
+  if (!customerId) {
+    console.log(`[Stripe Webhook] Invoice has no customer, skipping.`);
+    return;
+  }
 
   const user = await db.query.users.findFirst({
       where: eq(users.stripeCustomerId, customerId),
   });
 
   if (!user) {
-    console.log(`User not found for customerId: ${customerId}`);
+    console.log(`[Stripe Webhook] User not found for customerId: ${customerId}`);
     return;
   }
+
+  console.log(`[Stripe Webhook] Found user: ${user.id} for customer: ${customerId}`);
 
   // Identify Plan from Invoice to determine credits
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const priceId = (invoice.lines.data[0] as any)?.price?.id;
+  console.log(`[Stripe Webhook] Price ID from invoice: ${priceId}`);
+
   let planConfig = PRICING_PLANS[PLANS.BASIC];
 
   for (const config of Object.values(PRICING_PLANS)) {
@@ -249,7 +271,9 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 
   // If we couldn't match the price ID, log a warning
   if (planConfig === PRICING_PLANS[PLANS.BASIC] && priceId) {
-      console.warn(`Could not match Stripe Price ID ${priceId} to any plan. Defaulting to BASIC (no credits).`);
+      console.warn(`[Stripe Webhook] Could not match Stripe Price ID ${priceId} to any plan. Defaulting to BASIC (no credits).`);
+  } else {
+      console.log(`[Stripe Webhook] Matched plan config.`);
   }
 
   // Calculate credits to add
@@ -258,6 +282,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   if (planConfig.features.aiReadings.type === 'month') {
       creditsToAdd = planConfig.features.aiReadings.limit;
   }
+
+  console.log(`[Stripe Webhook] Credits to add (renewal): ${creditsToAdd}`);
 
   // Calculate expiration date (1 month from now)
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -272,7 +298,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       })
       .where(eq(users.id, user.id));
       
-  console.log(`Processed invoice (renewal) for user ${user.id}: Added ${creditsToAdd} credits, expires at ${expiresAt.toISOString()}.`);
+  console.log(`[Stripe Webhook] Processed invoice (renewal) for user ${user.id}: Added ${creditsToAdd} credits, new balance: ${user.creditBalance + creditsToAdd}, expires at ${expiresAt.toISOString()}.`);
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {

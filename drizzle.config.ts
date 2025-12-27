@@ -10,4 +10,5 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.PG_URL!.split('?')[0],
   },
+  tablesFilter: ["users", "subscriptions", "sessions", "redemption_codes", "cards_drawn", "messages"],
 });
