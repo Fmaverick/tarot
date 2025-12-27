@@ -39,6 +39,15 @@ export async function POST(req: Request) {
       return new Response("Insufficient credits", { status: 402 });
     }
 
+    // Check expiration
+    if (user.creditsExpiresAt && new Date(user.creditsExpiresAt) < new Date()) {
+      // Clear expired credits
+      await db.update(users)
+        .set({ creditBalance: 0 })
+        .where(eq(users.id, userId));
+      return new Response("Credits expired", { status: 402 });
+    }
+
     // Start Transaction
     await db.transaction(async (tx) => {
       // Deduct credit

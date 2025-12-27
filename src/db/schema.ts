@@ -6,6 +6,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   password: text('password').notNull(),
   creditBalance: integer('credit_balance').default(10).notNull(),
+  creditsExpiresAt: timestamp('credits_expires_at'),
   
   // Stripe & Pricing fields
   stripeCustomerId: text('stripe_customer_id').unique(),

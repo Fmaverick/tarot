@@ -20,6 +20,7 @@ export async function GET() {
         id: true,
         email: true,
         creditBalance: true,
+        creditsExpiresAt: true,
         plan: true,
         aiReadingsUsage: true,
         consultationUsage: true,
@@ -28,6 +29,16 @@ export async function GET() {
 
     if (!user) {
       return NextResponse.json({ user: null });
+    }
+
+    // Check expiration and clear if needed
+    if (user.creditsExpiresAt && new Date(user.creditsExpiresAt) < new Date() && user.creditBalance > 0) {
+        await db.update(users)
+          .set({ creditBalance: 0 })
+          .where(eq(users.id, user.id));
+        
+        // Update local user object to reflect changes
+        user.creditBalance = 0;
     }
 
     return NextResponse.json({ user });

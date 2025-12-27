@@ -194,17 +194,21 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       creditsToAdd = planConfig.features.aiReadings.limit;
   }
 
+  // Calculate expiration date (1 month from now)
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
   await db.update(users)
     .set({
       plan: plan,
       stripeCustomerId: session.customer as string,
       creditBalance: user.creditBalance + creditsToAdd,
+      creditsExpiresAt: expiresAt,
       aiReadingsUsage: 0,
       consultationUsage: 0,
     })
     .where(eq(users.id, userId));
     
-  console.log(`Processed checkout session for user ${userId}: Added ${creditsToAdd} credits.`);
+  console.log(`Processed checkout session for user ${userId}: Added ${creditsToAdd} credits, expires at ${expiresAt.toISOString()}.`);
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
@@ -255,16 +259,20 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       creditsToAdd = planConfig.features.aiReadings.limit;
   }
 
+  // Calculate expiration date (1 month from now)
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
   // Update user: reset usage AND add credits
   await db.update(users)
       .set({ 
           aiReadingsUsage: 0,
           consultationUsage: 0,
-          creditBalance: user.creditBalance + creditsToAdd
+          creditBalance: user.creditBalance + creditsToAdd,
+          creditsExpiresAt: expiresAt
       })
       .where(eq(users.id, user.id));
       
-  console.log(`Processed invoice (renewal) for user ${user.id}: Added ${creditsToAdd} credits.`);
+  console.log(`Processed invoice (renewal) for user ${user.id}: Added ${creditsToAdd} credits, expires at ${expiresAt.toISOString()}.`);
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
