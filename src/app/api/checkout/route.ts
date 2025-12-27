@@ -47,22 +47,56 @@ export async function POST(req: Request) {
 
     const origin = req.headers.get('origin') || 'http://localhost:3000';
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: stripeCustomerId,
+    const sessionParams = {
       line_items: [
         {
           price: planConfig.stripePriceId,
           quantity: 1,
         },
       ],
-      mode: 'subscription',
+      mode: 'subscription' as const,
       success_url: `${origin}?success=true`,
       cancel_url: `${origin}?canceled=true`,
       metadata: {
         userId: user.id.toString(),
         plan: plan,
       },
-    });
+    };
+
+    let checkoutSession;
+
+    try {
+      checkoutSession = await stripe.checkout.sessions.create({
+        customer: stripeCustomerId,
+        ...sessionParams,
+      });
+    } catch (error: unknown) {
+      // Handle currency mismatch error by creating a new customer
+      const errorMessage = error instanceof Error ? error.message : (error as { message?: string })?.message;
+
+      if (errorMessage?.includes('You cannot combine currencies on a single customer')) {
+        console.log('[STRIPE_CHECKOUT] Currency mismatch detected. Creating new customer...');
+        
+        const customer = await stripe.customers.create({
+          email: user.email,
+          metadata: {
+            userId: user.id.toString(),
+          },
+        });
+        stripeCustomerId = customer.id;
+        
+        await db.update(users)
+          .set({ stripeCustomerId })
+          .where(eq(users.id, user.id));
+
+        checkoutSession = await stripe.checkout.sessions.create({
+          customer: stripeCustomerId,
+          ...sessionParams,
+        });
+      } else {
+        throw error;
+      }
+    }
 
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
