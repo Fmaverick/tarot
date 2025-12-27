@@ -91,6 +91,10 @@ export const translations = {
       enter_code: "Enter redemption code",
       redeem: "Redeem",
       redeem_success: "Redeemed successfully!",
+      send_code: "Send Code",
+      verification_code: "Verification Code",
+      code_sent: "Code sent!",
+      resend_code: "Resend Code",
     },
     pricing: {
       title: "Pricing Plans",
@@ -221,6 +225,10 @@ export const translations = {
       enter_code: "输入兑换码",
       redeem: "兑换",
       redeem_success: "兑换成功！",
+      send_code: "发送验证码",
+      verification_code: "验证码",
+      code_sent: "验证码已发送",
+      resend_code: "重新发送",
     },
     pricing: {
       title: "定价方案",

@@ -16,10 +16,49 @@ interface AuthModalProps {
 
 export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { login, register } = useAuthStore();
+  const { login, register, sendVerificationCode } = useAuthStore();
   const { language } = useStore();
   const t = getTranslation(language);
   const [error, setError] = useState('');
+  const [countdown, setCountdown] = useState(0);
+
+  const handleSendCode = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const emailInput = document.getElementById('register-email') as HTMLInputElement;
+    const email = emailInput?.value;
+
+    if (!email) {
+      setError(t.auth.email_placeholder);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError('');
+      await sendVerificationCode(email);
+      setCountdown(600); // 10 minutes countdown for UI (though API enforces 10m)
+      
+      // Start countdown timer
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(t.auth.error_generic);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent, type: 'login' | 'register') => {
     e.preventDefault();
@@ -34,7 +73,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       if (type === 'login') {
         await login(email, password);
       } else {
-        await register(email, password);
+        const code = formData.get('code') as string;
+        await register(email, password, code);
       }
       onOpenChange(false);
     } catch (err: unknown) {
@@ -46,6 +86,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -81,12 +127,27 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <TabsContent value="register">
             <form onSubmit={(e) => handleSubmit(e, 'register')} className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="email">{t.auth.email}</Label>
-                <Input id="email" name="email" type="email" required placeholder={t.auth.email_placeholder} />
+                <Label htmlFor="register-email">{t.auth.email}</Label>
+                <div className="flex gap-2">
+                  <Input id="register-email" name="email" type="email" required placeholder={t.auth.email_placeholder} />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleSendCode}
+                    disabled={isLoading || countdown > 0}
+                    className="whitespace-nowrap"
+                  >
+                    {countdown > 0 ? formatTime(countdown) : t.auth.send_code}
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">{t.auth.password}</Label>
-                <Input id="password" name="password" type="password" required />
+                <Label htmlFor="code">{t.auth.verification_code}</Label>
+                <Input id="code" name="code" type="text" required placeholder="123456" maxLength={6} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="register-password">{t.auth.password}</Label>
+                <Input id="register-password" name="password" type="password" required />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>

@@ -22,6 +22,13 @@
       "when": 1766832385602,
       "tag": "0002_pale_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1766856170242,
+      "tag": "0003_solid_malice",
+      "breakpoints": true
     }
   ]
 }

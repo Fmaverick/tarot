@@ -14,7 +14,8 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, code: string) => Promise<void>;
+  sendVerificationCode: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
   redeemCode: (code: string) => Promise<{ success: boolean; pointsAdded: number; newBalance: number }>;
@@ -40,10 +41,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user: data.user });
   },
 
-  register: async (email, password) => {
+  register: async (email, password, code) => {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, code }),
       headers: { 'Content-Type': 'application/json' },
     });
     
@@ -54,6 +55,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     
     const data = await res.json();
     set({ user: data.user });
+  },
+
+  sendVerificationCode: async (email) => {
+    const res = await fetch('/api/auth/send-code', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to send verification code');
+    }
   },
 
   logout: async () => {

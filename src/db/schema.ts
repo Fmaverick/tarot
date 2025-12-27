@@ -58,6 +58,14 @@ export const cardsDrawn = pgTable('cards_drawn', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const emailVerifications = pgTable('email_verifications', {
+  id: serial('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  code: text('code').notNull(),
+  sentAt: timestamp('sent_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+});
+
 export const messages = pgTable('messages', {
   id: serial('id').primaryKey(),
   sessionId: uuid('session_id').notNull().references(() => sessions.id),
