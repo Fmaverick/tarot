@@ -30,6 +30,7 @@ export async function POST(req: Request) {
       email,
       password: passwordHash,
       creditBalance: 10, // Default credits
+      creditsExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days validity
     }).returning();
 
     // Create session

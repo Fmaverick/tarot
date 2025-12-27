@@ -48,7 +48,8 @@ export async function POST(req: Request) {
           creditBalance: (await tx.query.users.findFirst({
             where: eq(users.id, userId),
             columns: { creditBalance: true }
-          }))!.creditBalance + redemptionCode.points
+          }))!.creditBalance + redemptionCode.points,
+          creditsExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Reset validity to 30 days
         })
         .where(eq(users.id, userId))
         .returning({ creditBalance: users.creditBalance });
