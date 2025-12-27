@@ -38,6 +38,10 @@ export async function POST(req: Request) {
         await handleSubscriptionChange(event);
         break;
 
+      case 'checkout.session.completed':
+        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
+        break;
+
       // Invoice Events
       case 'invoice.paid':
         await handleInvoicePaid(event.data.object as Stripe.Invoice);
@@ -160,13 +164,60 @@ async function handleSubscriptionChange(event: Stripe.Event) {
   }
 }
 
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  if (!session.metadata?.userId || !session.metadata?.plan) {
+    console.log('Missing metadata in checkout session');
+    return;
+  }
+
+  const userId = parseInt(session.metadata.userId);
+  const plan = session.metadata.plan as PlanLevel;
+  
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+  });
+
+  if (!user) {
+    console.log(`User not found: ${userId}`);
+    return;
+  }
+
+  const planConfig = PRICING_PLANS[plan];
+  if (!planConfig) {
+     console.log(`Invalid plan in metadata: ${plan}`);
+     return;
+  }
+
+  // Calculate credits to add
+  let creditsToAdd = 0;
+  if (planConfig.features.aiReadings.type === 'month') {
+      creditsToAdd = planConfig.features.aiReadings.limit;
+  }
+
+  await db.update(users)
+    .set({
+      plan: plan,
+      stripeCustomerId: session.customer as string,
+      creditBalance: user.creditBalance + creditsToAdd,
+      aiReadingsUsage: 0,
+      consultationUsage: 0,
+    })
+    .where(eq(users.id, userId));
+    
+  console.log(`Processed checkout session for user ${userId}: Added ${creditsToAdd} credits.`);
+}
+
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
   // Use type assertion to access subscription safely
   const inv = invoice as unknown as { subscription: string | null; customer: string | null };
   if (!inv.subscription) return;
 
-  // We don't strictly need to fetch the subscription if we just want to reset usage
-  // The fact that the invoice is paid and linked to a subscription is enough to signal a renewal/payment
+  // Skip if this is a subscription creation or update (handled by checkout.session.completed)
+  // We only want to handle recurring payments (renewals) here
+  if (invoice.billing_reason === 'subscription_create' || invoice.billing_reason === 'subscription_update') {
+    console.log(`Skipping invoice.paid for ${invoice.billing_reason} (handled by checkout): ${invoice.id}`);
+    return;
+  }
   
   const customerId = inv.customer;
   if (!customerId) return;
@@ -175,7 +226,10 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       where: eq(users.stripeCustomerId, customerId),
   });
 
-  if (!user) return;
+  if (!user) {
+    console.log(`User not found for customerId: ${customerId}`);
+    return;
+  }
 
   // Identify Plan from Invoice to determine credits
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -187,6 +241,11 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
           planConfig = config;
           break;
       }
+  }
+
+  // If we couldn't match the price ID, log a warning
+  if (planConfig === PRICING_PLANS[PLANS.BASIC] && priceId) {
+      console.warn(`Could not match Stripe Price ID ${priceId} to any plan. Defaulting to BASIC (no credits).`);
   }
 
   // Calculate credits to add
@@ -205,7 +264,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       })
       .where(eq(users.id, user.id));
       
-  console.log(`Processed invoice for user ${user.id}: Added ${creditsToAdd} credits.`);
+  console.log(`Processed invoice (renewal) for user ${user.id}: Added ${creditsToAdd} credits.`);
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
