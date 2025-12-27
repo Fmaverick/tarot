@@ -86,6 +86,7 @@ export const translations = {
       credits: "Credits",
       history: "History",
       logout: "Logout",
+      confirm_delete: "Are you sure you want to delete this session?",
     },
   },
   zh: {
@@ -174,6 +175,7 @@ export const translations = {
       credits: "积分",
       history: "历史",
       logout: "退出登录",
+      confirm_delete: "确定要删除这条记录吗？",
     },
   }
 };

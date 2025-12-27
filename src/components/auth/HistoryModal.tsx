@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, Calendar, LayoutGrid, MessageSquare } from 'lucide-react';
+import { Loader2, Calendar, LayoutGrid, MessageSquare, Trash2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { getTranslation } from '@/lib/i18n';
 import { PlacedCard } from '@/types/tarot';
@@ -41,6 +41,22 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
         .finally(() => setIsLoading(false));
     }
   }, [open]);
+
+  const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    if (!confirm(t.auth.confirm_delete)) return;
+
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setSessions(prev => prev.filter(s => s.id !== sessionId));
+      }
+    } catch (error) {
+      console.error("Failed to delete session", error);
+    }
+  };
 
   const handleSessionClick = async (sessionId: string) => {
     const session = sessions.find(s => s.id === sessionId);
@@ -125,6 +141,14 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
                     className="group border rounded-lg p-4 hover:bg-black/5 transition-all cursor-pointer relative overflow-hidden"
                     onClick={() => handleSessionClick(session.id)}
                   >
+                    {/* Delete Button */}
+                    <button
+                      onClick={(e) => handleDeleteSession(e, session.id)}
+                      className="absolute top-1/2 -translate-y-1/2 right-2 z-20 p-2 text-black/20 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+
                     {/* Background decoration */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-black/5 to-transparent rounded-bl-full -mr-8 -mt-8 opacity-0 group-hover:opacity-100 transition-opacity" />
 
