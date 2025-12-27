@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { getTranslation } from "@/lib/i18n";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { Hero } from "@/components/tarot/Hero";
+import { PricingSection } from "@/components/tarot/PricingSection";
 
 export default function Home() {
   const { selectedSpread, placedCards, resetReading, clearSpread, isReading, language, setLanguage, currentQuestion } = useStore();
@@ -81,9 +82,12 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="w-full flex-1 flex items-center justify-center"
+                className="w-full flex-1 flex flex-col items-center justify-center gap-24"
              >
-                <Hero onStart={() => setHasStarted(true)} />
+                <div className="min-h-[80vh] flex items-center justify-center w-full">
+                  <Hero onStart={() => setHasStarted(true)} />
+                </div>
+                <PricingSection />
              </motion.div>
           ) : !selectedSpread ? (
             <motion.div 

@@ -92,6 +92,43 @@ export const translations = {
       redeem: "Redeem",
       redeem_success: "Redeemed successfully!",
     },
+    pricing: {
+      title: "Pricing Plans",
+      subtitle: "Choose the path that resonates with your spiritual journey",
+      monthly: "/mo",
+      features: {
+        ai_readings: "AI Readings",
+        history_days: "History Retention",
+        import_others: "Import Other's Info",
+        daily_fortune: "Daily Fortune",
+        report_export: "Export Report",
+        api_access: "API Access",
+        consultation: "Expert Consultation",
+      },
+      plans: {
+        basic: {
+          name: "Basic",
+          description: "For first-time explorers",
+          cta: "Start Free",
+        },
+        pro: {
+          name: "Pro",
+          description: "For deep insight seekers",
+          cta: "Upgrade to Pro",
+        },
+        premium: {
+          name: "Premium",
+          description: "For the ultimate experience",
+          cta: "Upgrade to Premium",
+        },
+      },
+      values: {
+        lifetime: "Lifetime",
+        days: "Days",
+        times: "times",
+        unlimited: "Unlimited",
+      }
+    },
   },
   zh: {
     app: {
@@ -184,6 +221,43 @@ export const translations = {
       enter_code: "输入兑换码",
       redeem: "兑换",
       redeem_success: "兑换成功！",
+    },
+    pricing: {
+      title: "定价方案",
+      subtitle: "选择与你灵性旅程共鸣的道路",
+      monthly: "/月",
+      features: {
+        ai_readings: "AI 深度解读",
+        history_days: "历史记录保存",
+        import_others: "信息导入 (支持他人)",
+        daily_fortune: "每日运势推送",
+        report_export: "报告导出",
+        api_access: "API 接入",
+        consultation: "专属命理咨询",
+      },
+      plans: {
+        basic: {
+          name: "基础版",
+          description: "适合初次体验 以太神谕",
+          cta: "立即体验",
+        },
+        pro: {
+          name: "专业版",
+          description: "适合需要深度洞察的探索者",
+          cta: "升级专业版",
+        },
+        premium: {
+          name: "高级版",
+          description: "适合追求极致体验的资深用户",
+          cta: "升级高级版",
+        },
+      },
+      values: {
+        lifetime: "永久保存",
+        days: "天",
+        times: "次",
+        unlimited: "不限次数",
+      }
     },
   }
 };

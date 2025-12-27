@@ -36,7 +36,16 @@ export async function POST(req: Request) {
     const token = await signSession({ userId: newUser.id, email: newUser.email });
     setSessionCookie(token);
 
-    return NextResponse.json({ user: { id: newUser.id, email: newUser.email, creditBalance: newUser.creditBalance } });
+    return NextResponse.json({
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        creditBalance: newUser.creditBalance,
+        plan: newUser.plan,
+        aiReadingsUsage: newUser.aiReadingsUsage,
+        consultationUsage: newUser.consultationUsage,
+      }
+    });
   } catch (error) {
     console.error('Register error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

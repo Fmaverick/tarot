@@ -20,6 +20,9 @@ export async function GET() {
         id: true,
         email: true,
         creditBalance: true,
+        plan: true,
+        aiReadingsUsage: true,
+        consultationUsage: true,
       }
     });
 

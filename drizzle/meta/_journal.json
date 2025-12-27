@@ -15,6 +15,13 @@
       "when": 1766830059058,
       "tag": "0001_nice_whistler",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1766832385602,
+      "tag": "0002_pale_stardust",
+      "breakpoints": true
     }
   ]
 }

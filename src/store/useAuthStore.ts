@@ -1,9 +1,13 @@
 import { create } from 'zustand';
+import { PlanLevel } from '@/lib/pricing';
 
 interface User {
   id: number;
   email: string;
   creditBalance: number;
+  plan: PlanLevel;
+  aiReadingsUsage: number;
+  consultationUsage: number;
 }
 
 interface AuthState {

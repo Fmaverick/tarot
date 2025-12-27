@@ -6,6 +6,26 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   password: text('password').notNull(),
   creditBalance: integer('credit_balance').default(10).notNull(),
+  
+  // Stripe & Pricing fields
+  stripeCustomerId: text('stripe_customer_id').unique(),
+  plan: text('plan').default('basic').notNull(), // 'basic', 'pro', 'premium'
+  aiReadingsUsage: integer('ai_readings_usage').default(0).notNull(),
+  consultationUsage: integer('consultation_usage').default(0).notNull(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const subscriptions = pgTable('subscriptions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  stripeSubscriptionId: text('stripe_subscription_id').unique().notNull(),
+  stripePriceId: text('stripe_price_id').notNull(),
+  status: text('status').notNull(),
+  currentPeriodStart: timestamp('current_period_start').notNull(),
+  currentPeriodEnd: timestamp('current_period_end').notNull(),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -49,6 +69,14 @@ export const messages = pgTable('messages', {
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   redemptionCodes: many(redemptionCodes),
+  subscriptions: many(subscriptions),
+}));
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one, many }) => ({
