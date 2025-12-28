@@ -2,11 +2,10 @@ import { motion } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { getTranslation } from "@/lib/i18n";
 import { PLANS, PRICING_PLANS } from "@/lib/pricing";
-import { Check, Loader2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useState } from "react";
 
 interface PricingCardsProps {
   className?: string;
@@ -17,8 +16,9 @@ export function PricingCards({ className, isModal = false }: PricingCardsProps) 
   const { language } = useStore();
   const { user } = useAuthStore();
   const t = getTranslation(language);
-  const [loading, setLoading] = useState<string | null>(null);
+  // const [loading, setLoading] = useState<string | null>(null);
 
+  /*
   const handleSubscribe = async (planKey: string) => {
     if (!user) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -49,6 +49,7 @@ export function PricingCards({ className, isModal = false }: PricingCardsProps) 
       setLoading(null);
     }
   };
+  */
 
   const plans = [
     {
