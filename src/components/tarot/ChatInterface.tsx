@@ -500,7 +500,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
               <div 
                 className="fixed z-[9999] animate-in fade-in zoom-in duration-200 pointer-events-auto"
                 style={isMobile ? {
-                    bottom: '160px',
+                    bottom: '40px',
                     left: '50%',
                     transform: 'translateX(-50%)'
                 } : {
@@ -523,7 +523,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                     <Quote className="w-3.5 h-3.5" />
                      {t.share.quote_action}
                   </Button>
-                 {/* Arrow/Triangle pointing down - Desktop only */}
+                 {/* Arrow/Triangle - Desktop only */}
                  {!isMobile && (
                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45" />
                  )}
