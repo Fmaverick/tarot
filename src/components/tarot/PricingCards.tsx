@@ -156,11 +156,12 @@ export function PricingCards({ className, isModal = false }: PricingCardsProps) 
               "w-full rounded-full h-12 text-sm tracking-wider font-medium",
               plan.featured ? "bg-black text-white hover:bg-black/90" : "hover:bg-black/5"
             )}
-            disabled={user?.plan === plan.key || loading === plan.key}
-            onClick={() => handleSubscribe(plan.key)}
+            disabled={true}
           >
-            {loading === plan.key && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {user?.plan === plan.key ? 'Current Plan' : plan.trans.cta}
+            {user?.plan === plan.key 
+              ? (language === 'zh' ? '当前计划' : 'Current Plan')
+              : (language === 'zh' ? '暂未开放' : 'Coming Soon')
+            }
           </Button>
         </motion.div>
       ))}
