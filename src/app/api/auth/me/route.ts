@@ -24,6 +24,7 @@ export async function GET() {
         plan: true,
         aiReadingsUsage: true,
         consultationUsage: true,
+        invitationCode: true,
       }
     });
 

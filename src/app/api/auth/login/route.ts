@@ -41,6 +41,7 @@ export async function POST(req: Request) {
         plan: user.plan,
         aiReadingsUsage: user.aiReadingsUsage,
         consultationUsage: user.consultationUsage,
+        invitationCode: user.invitationCode,
       }
     });
   } catch (error) {
