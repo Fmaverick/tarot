@@ -51,7 +51,6 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
   // K-line state
   const [klineHtml, setKlineHtml] = useState<string | null>(null);
   const [isGeneratingKline, setIsGeneratingKline] = useState(false);
-  const klineGeneratedRef = useRef(false);
 
   console.log("ChatInterface selectedSpread:", selectedSpread);
 
@@ -83,33 +82,6 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
         if (lastMessage.role === 'assistant' && lastMessage.id !== lastProcessedMessageId.current) {
           lastProcessedMessageId.current = lastMessage.id;
           
-          // Generate K-line chart if spread is life-tree and it's the first assistant message
-          const isFirstAssistantMessage = messages.filter(m => m.role === 'assistant').length === 1;
-          if (selectedSpread?.id === 'life-tree' && isFirstAssistantMessage && !klineGeneratedRef.current) {
-            klineGeneratedRef.current = true;
-            setIsGeneratingKline(true);
-            try {
-              const response = await fetch('/api/chat/kline', {
-                method: 'POST',
-                body: JSON.stringify({
-                  sessionId,
-                  spread: selectedSpread,
-                  cards: Object.values(placedCards),
-                  question: currentQuestion,
-                  language
-                })
-              });
-              const data = await response.json();
-              if (data.html) {
-                setKlineHtml(data.html);
-              }
-            } catch (error) {
-              console.error('Failed to fetch K-line chart:', error);
-            } finally {
-              setIsGeneratingKline(false);
-            }
-          }
-
           try {
             const response = await fetch('/api/chat/suggestions', {
               method: 'POST',
@@ -135,6 +107,43 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
 
     fetchSuggestions();
   }, [isLoading, messages, selectedSpread, placedCards, currentQuestion, language, sessionId]);
+
+  // Handle K-line generation and recovery
+  useEffect(() => {
+    if (selectedSpread?.id !== 'life-tree') return;
+
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
+    if (assistantMessages.length === 0) return;
+
+    // If we already have HTML or are generating, do nothing
+    if (klineHtml || isGeneratingKline) return;
+
+    const generateKline = async () => {
+      setIsGeneratingKline(true);
+      try {
+        const response = await fetch('/api/chat/kline', {
+          method: 'POST',
+          body: JSON.stringify({
+            sessionId,
+            spread: selectedSpread,
+            cards: Object.values(placedCards),
+            question: currentQuestion,
+            language
+          })
+        });
+        const data = await response.json();
+        if (data.html) {
+          setKlineHtml(data.html);
+        }
+      } catch (error) {
+        console.error('Failed to fetch K-line chart:', error);
+      } finally {
+        setIsGeneratingKline(false);
+      }
+    };
+
+    generateKline();
+  }, [messages, selectedSpread, klineHtml, isGeneratingKline, sessionId, placedCards, currentQuestion, language]);
 
   // Handle Text Selection
   useEffect(() => {
@@ -392,8 +401,13 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
         className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6 flex flex-col mask-image-gradient"
       >
         <div className="w-full space-y-6 pb-4">
-          {messages.map((m) => (
-            <div key={m.id} className="flex gap-3 w-full group">
+          {messages.map((m) => {
+            const firstAssistantMessageId = messages.find(msg => msg.role === 'assistant')?.id;
+            const isFirstAssistant = m.role === 'assistant' && m.id === firstAssistantMessageId;
+            
+            return (
+            <div key={m.id} className="flex flex-col w-full gap-4">
+              <div className="flex gap-3 w-full group">
                {isSelectionMode && (
                    <div className="pt-2 pl-1 animate-in fade-in slide-in-from-left-2 duration-200">
                      <Checkbox 
@@ -424,8 +438,27 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                     )}
                   </div>
                 </motion.div>
+              </div>
+
+              {/* K-line Preview - Show after first assistant message */}
+              {isFirstAssistant && selectedSpread?.id === 'life-tree' && !isSelectionMode && (
+                  <div className="w-full pl-0 lg:pl-0 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+                      {klineHtml && (
+                          <KlineChartPreview 
+                              htmlContent={klineHtml} 
+                              onClose={() => setKlineHtml(null)} 
+                          />
+                      )}
+                      {isGeneratingKline && (
+                          <div className="flex items-center gap-3 py-4 text-black/40">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span className="text-xs font-serif italic">正在绘制人生 K 线图...</span>
+                          </div>
+                      )}
+                  </div>
+              )}
             </div>
-          ))}
+          )})}
           {isLoadingHistory && (
              <div className="flex justify-center py-4 w-full">
                <Loader2 className="w-5 h-5 animate-spin text-black/20" />
@@ -439,21 +472,6 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
              </div>
           )}
           
-          {/* K-line Preview */}
-          {klineHtml && !isSelectionMode && (
-            <KlineChartPreview 
-              htmlContent={klineHtml} 
-              onClose={() => setKlineHtml(null)} 
-            />
-          )}
-
-          {isGeneratingKline && (
-            <div className="flex items-center gap-3 py-4 text-black/40">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-xs font-serif italic">正在绘制人生 K 线图...</span>
-            </div>
-          )}
-
           {/* Suggested Questions */}
           {suggestedQuestions.length > 0 && !isLoading && !isSelectionMode && (
             <div className="flex flex-wrap gap-2 w-full justify-start pt-2 pb-4">
