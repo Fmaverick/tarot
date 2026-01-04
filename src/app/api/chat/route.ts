@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { users, sessions, messages as messagesTable, cardsDrawn } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export const maxDuration = 30;
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   const { messages, context, sessionId } = await req.json();
