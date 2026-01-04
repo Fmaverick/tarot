@@ -12,6 +12,8 @@ export async function POST(req: Request) {
   const { messages, context, sessionId } = await req.json();
   const { spread, cards, question } = context || {};
 
+  console.log("POST spread:", spread);
+
   // Auth check
   const session = await getSession();
   if (!session || !session.userId) {

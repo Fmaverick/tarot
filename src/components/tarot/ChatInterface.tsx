@@ -12,6 +12,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ShareModal } from "./ShareModal";
 import { QuoteShareModal } from "./QuoteShareModal";
+import { KlineChartPreview } from "./KlineChartPreview";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,13 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
   const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set());
   const [showShareModal, setShowShareModal] = useState(false);
 
+  // K-line state
+  const [klineHtml, setKlineHtml] = useState<string | null>(null);
+  const [isGeneratingKline, setIsGeneratingKline] = useState(false);
+  const klineGeneratedRef = useRef(false);
+
+  console.log("ChatInterface selectedSpread:", selectedSpread);
+
   const { messages, append, input, handleInputChange, handleSubmit, isLoading, setInput, setMessages } = useChat({
     api: "/api/chat",
     body: {
@@ -74,6 +82,33 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
         const lastMessage = messages[messages.length - 1];
         if (lastMessage.role === 'assistant' && lastMessage.id !== lastProcessedMessageId.current) {
           lastProcessedMessageId.current = lastMessage.id;
+          
+          // Generate K-line chart if spread is life-tree and it's the first assistant message
+          const isFirstAssistantMessage = messages.filter(m => m.role === 'assistant').length === 1;
+          if (selectedSpread?.id === 'life-tree' && isFirstAssistantMessage && !klineGeneratedRef.current) {
+            klineGeneratedRef.current = true;
+            setIsGeneratingKline(true);
+            try {
+              const response = await fetch('/api/chat/kline', {
+                method: 'POST',
+                body: JSON.stringify({
+                  spread: selectedSpread,
+                  cards: Object.values(placedCards),
+                  question: currentQuestion,
+                  language
+                })
+              });
+              const data = await response.json();
+              if (data.html) {
+                setKlineHtml(data.html);
+              }
+            } catch (error) {
+              console.error('Failed to fetch K-line chart:', error);
+            } finally {
+              setIsGeneratingKline(false);
+            }
+          }
+
           try {
             const response = await fetch('/api/chat/suggestions', {
               method: 'POST',
@@ -98,7 +133,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
     };
 
     fetchSuggestions();
-  }, [isLoading, messages, selectedSpread, placedCards, currentQuestion]);
+  }, [isLoading, messages, selectedSpread, placedCards, currentQuestion, language]);
 
   // Handle Text Selection
   useEffect(() => {
@@ -403,6 +438,21 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
              </div>
           )}
           
+          {/* K-line Preview */}
+          {klineHtml && !isSelectionMode && (
+            <KlineChartPreview 
+              htmlContent={klineHtml} 
+              onClose={() => setKlineHtml(null)} 
+            />
+          )}
+
+          {isGeneratingKline && (
+            <div className="flex items-center gap-3 py-4 text-black/40">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-xs font-serif italic">正在绘制人生 K 线图...</span>
+            </div>
+          )}
+
           {/* Suggested Questions */}
           {suggestedQuestions.length > 0 && !isLoading && !isSelectionMode && (
             <div className="flex flex-wrap gap-2 w-full justify-start pt-2 pb-4">
