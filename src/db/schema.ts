@@ -133,7 +133,25 @@ export const sessionsRelations = relations(sessions, ({ one, many }) => ({
   }),
   messages: many(messages),
   cardsDrawn: many(cardsDrawn),
+  sephirothData: one(sephirothData),
 }));
+
+export const sephirothData = pgTable('sephiroth_data', {
+  id: serial('id').primaryKey(),
+  sessionId: uuid('session_id').references(() => sessions.id, { onDelete: 'cascade' }).notNull().unique(),
+  data: text('data').notNull(), // JSON string of sephirothData array
+  descriptions: text('descriptions').notNull(), // JSON string of sephirothDescriptions object
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const sephirothDataRelations = relations(sephirothData, ({ one }) => ({
+  session: one(sessions, {
+    fields: [sephirothData.sessionId],
+    references: [sessions.id],
+  }),
+}));
+
 
 export const redemptionCodesRelations = relations(redemptionCodes, ({ one }) => ({
   user: one(users, {

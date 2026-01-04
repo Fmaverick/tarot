@@ -276,35 +276,88 @@ export const KLINE_TEMPLATE = `<!DOCTYPE html>
         // 源质描述
         const sephirothDescriptions = __SEPHIROTH_DESCRIPTIONS__;
         
-        // K线数据（模拟人生不同阶段的能量波动）
+        // K线数据生成：基于源质能量的线性插值与波动模拟
         const klineData = [];
+        let prevClose = 5; // 初始基准能量
+
+        // 1. 预处理关键点数据
+        // 按年龄排序，确保插值逻辑正确
+        const keyPoints = [...sephirothData].sort((a, b) => a.age - b.age);
+        
+        // 添加起始点（0岁）和终点（80岁）
+        if (keyPoints[0].age > 0) {
+            keyPoints.unshift({ age: 0, energy: 5, id: 'start' });
+        }
+        if (keyPoints[keyPoints.length - 1].age < 80) {
+            // 终点能量回归平稳或延续最后一个源质的趋势
+            keyPoints.push({ age: 80, energy: keyPoints[keyPoints.length - 1].energy, id: 'end' });
+        }
+
+        // 2. 逐年计算能量值
         for (let i = 0; i < 80; i++) {
-            const baseEnergy = 5 + Math.sin(i / 10) * 2;
-            const volatility = 0.5 + Math.random() * 0.5;
-            const open = baseEnergy + (Math.random() - 0.5) * volatility;
-            const close = baseEnergy + (Math.random() - 0.5) * volatility;
-            const high = Math.max(open, close) + Math.random() * volatility;
-            const low = Math.min(open, close) - Math.random() * volatility;
+            // 找到当前年龄 i 处于哪两个关键点之间
+            let startPoint = keyPoints[0];
+            let endPoint = keyPoints[keyPoints.length - 1];
             
-            // 在关键年龄点添加源质能量影响
-            sephirothData.forEach(sep => {
-                if (Math.abs(i - sep.age) < 2) {
-                    const influence = (sep.energy - 5) / 10;
-                    klineData[i] = {
-                        open: open + influence,
-                        high: high + influence * 1.2,
-                        low: low + influence * 0.8,
-                        close: close + influence,
-                        age: i,
-                        hasEvent: true,
-                        eventSephiroth: sep.id
-                    };
+            for (let j = 0; j < keyPoints.length - 1; j++) {
+                if (i >= keyPoints[j].age && i < keyPoints[j+1].age) {
+                    startPoint = keyPoints[j];
+                    endPoint = keyPoints[j+1];
+                    break;
                 }
-            });
-            
-            if (!klineData[i]) {
-                klineData[i] = { open, high, low, close, age: i, hasEvent: false };
             }
+
+            // 计算进度比例 (0~1)
+            const progress = (i - startPoint.age) / (endPoint.age - startPoint.age);
+            
+            // 基础趋势能量（线性插值 + 缓动效果）
+            // 使用余弦插值让过渡更平滑：(1 - Math.cos(progress * Math.PI)) / 2
+            const easeProgress = (1 - Math.cos(progress * Math.PI)) / 2;
+            const trendEnergy = startPoint.energy + (endPoint.energy - startPoint.energy) * easeProgress;
+            
+            // 确定今日开盘价 (连续性保证)
+            const open = (i === 0) ? trendEnergy : prevClose;
+            
+            // 计算目标收盘价
+            // 目标是让 close 围绕 trendEnergy 波动，但又保持向 trendEnergy 的回归力
+            // volatility 应该受源质本身的性质影响，这里简化为固定波动或基于能量强度的波动
+            const volatility = 0.3 + Math.abs(trendEnergy - 5) * 0.1; 
+            
+            // 随机扰动 (保留一点点随机性模拟生活的不确定性，但主要受趋势控制)
+            // 如果希望完全确定性，可以去掉 Math.random()，或者用伪随机数生成器
+            const noise = (Math.random() - 0.5) * volatility;
+            
+            // 收盘价 = 趋势值 + 扰动
+            // 稍微平滑处理：当前趋势值占大头
+            let close = trendEnergy + noise;
+            
+            // 关键事件标记
+            let hasEvent = false;
+            let eventSephiroth = null;
+            
+            // 检查是否正好是某个源质的关键年份
+            const currentSep = sephirothData.find(sep => Math.abs(sep.age - i) < 1);
+            if (currentSep) {
+                hasEvent = true;
+                eventSephiroth = currentSep.id;
+                // 关键年份强制收敛到源质能量值，强调该源质的影响
+                close = currentSep.energy; 
+            }
+            
+            const high = Math.max(open, close) + Math.abs(noise) * 0.5;
+            const low = Math.min(open, close) - Math.abs(noise) * 0.5;
+            
+            klineData[i] = { 
+                open, 
+                high, 
+                low, 
+                close, 
+                age: i, 
+                hasEvent, 
+                eventSephiroth 
+            };
+            
+            prevClose = close;
         }
         
         // 初始化Canvas

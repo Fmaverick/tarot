@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/db";
 import { users, sessions, messages as messagesTable, cardsDrawn } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getOrGenerateSephirothData } from "@/lib/sephiroth";
 
 export const maxDuration = 300;
 
@@ -96,11 +97,29 @@ export async function POST(req: Request) {
   });
 
   // Construct a detailed description of the spread
-  const cardsDescription = cards.map((c: PlacedCard) => {
+  let cardsDescription = cards.map((c: PlacedCard) => {
     const position = spread.positions.find((p: SpreadPosition) => p.id === c.positionId);
     return `- Position "${position?.name}" (${position?.description}): ${c.card.name} ${c.isReversed ? '(Reversed)' : '(Upright)'}
       Meaning: ${c.isReversed ? c.card.meaning_reversed : c.card.meaning_upright}`;
   }).join('\n');
+
+  // Inject Sephiroth Data if spread is life-tree
+  if (spread?.id === 'life-tree') {
+      try {
+          const sephirothData = await getOrGenerateSephirothData(sessionId, cards, question);
+          
+          cardsDescription += `\n\n[System Note: Sephiroth (Life Tree) Energy Data]\n`;
+          cardsDescription += `Based on the cards, the following Sephiroth energies are active:\n`;
+          
+          sephirothData.sephirothData.forEach((s: any) => {
+             cardsDescription += `- ${s.name} (Energy: ${s.energy}/10, Volatility: ${s.volatility}): ${sephirothData.sephirothDescriptions[s.id]}\n`;
+          });
+          
+          cardsDescription += `\nPlease use these energy levels and descriptions to inform your reading, ensuring consistency with the K-line chart visualization that the user sees.`;
+      } catch (e) {
+          console.error("Failed to inject sephiroth data:", e);
+      }
+  }
 
   const isFollowUp = messages.some((m: CoreMessage) => m.role === 'assistant');
 

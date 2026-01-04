@@ -43,6 +43,13 @@
       "when": 1766994055633,
       "tag": "0005_tricky_nocturne",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1767535685211,
+      "tag": "0006_narrow_vision",
+      "breakpoints": true
     }
   ]
 }

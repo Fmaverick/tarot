@@ -92,6 +92,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
               const response = await fetch('/api/chat/kline', {
                 method: 'POST',
                 body: JSON.stringify({
+                  sessionId,
                   spread: selectedSpread,
                   cards: Object.values(placedCards),
                   question: currentQuestion,
