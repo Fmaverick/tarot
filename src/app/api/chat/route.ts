@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/db";
 import { users, sessions, messages as messagesTable, cardsDrawn } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { getOrGenerateSephirothData } from "@/lib/sephiroth";
+import { getOrGenerateSephirothData, SephirothItem } from "@/lib/sephiroth";
 
 export const maxDuration = 300;
 
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
           cardsDescription += `\n\n[System Note: Sephiroth (Life Tree) Energy Data]\n`;
           cardsDescription += `Based on the cards, the following Sephiroth energies are active:\n`;
           
-          sephirothData.sephirothData.forEach((s: any) => {
+          sephirothData.sephirothData.forEach((s: SephirothItem) => {
              cardsDescription += `- ${s.name} (Energy: ${s.energy}/10, Volatility: ${s.volatility}): ${sephirothData.sephirothDescriptions[s.id]}\n`;
           });
           

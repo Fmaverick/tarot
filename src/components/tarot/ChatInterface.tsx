@@ -134,7 +134,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
     };
 
     fetchSuggestions();
-  }, [isLoading, messages, selectedSpread, placedCards, currentQuestion, language]);
+  }, [isLoading, messages, selectedSpread, placedCards, currentQuestion, language, sessionId]);
 
   // Handle Text Selection
   useEffect(() => {

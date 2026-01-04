@@ -17,11 +17,25 @@ interface PlacedCard {
   isReversed: boolean;
 }
 
+export interface SephirothItem {
+  id: number;
+  name: string;
+  energy: number;
+  volatility: number;
+  age: number;
+  color: string;
+}
+
+export interface SephirothResult {
+  sephirothData: SephirothItem[];
+  sephirothDescriptions: Record<string, string>;
+}
+
 export async function getOrGenerateSephirothData(
   sessionId: string,
   cards: PlacedCard[],
   question: string
-) {
+): Promise<SephirothResult> {
   // 1. Check DB
   if (sessionId) {
     const existingData = await db.query.sephirothData.findFirst({
