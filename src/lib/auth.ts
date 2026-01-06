@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-change-me');
 const ALG = 'HS256';
@@ -17,7 +17,15 @@ export async function signSession(payload: Record<string, unknown>) {
 
 export async function verifySession() {
   const cookieStore = cookies();
-  const token = cookieStore.get('session')?.value;
+  let token = cookieStore.get('session')?.value;
+
+  // 如果 cookie 中没有 token，尝试从 Authorization header 中获取
+  if (!token) {
+    const authHeader = headers().get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
 
   if (!token) return null;
 
@@ -37,10 +45,12 @@ export async function getSession() {
 
 export function setSessionCookie(token: string) {
   const cookieStore = cookies();
+  const isProd = process.env.NODE_ENV === 'production';
+  
   cookieStore.set('session', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     path: '/',
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });

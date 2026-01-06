@@ -16,10 +16,15 @@ export function middleware(request: NextRequest) {
     };
 
     // 动态处理 Origin 和 Credentials
-    // 如果有 origin，则允许该 origin 并开启 credentials
-    if (origin) {
+    if (origin && origin !== 'null') {
       Object.assign(headers, {
         'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Credentials': 'true',
+      });
+    } else if (origin === 'null') {
+      // 特殊处理 origin 为 'null' 的情况 (如某些移动端 WebView 或本地文件)
+      Object.assign(headers, {
+        'Access-Control-Allow-Origin': 'null',
         'Access-Control-Allow-Credentials': 'true',
       });
     } else {
