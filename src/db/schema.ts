@@ -66,6 +66,8 @@ export const sessions = pgTable('sessions', {
   userId: integer('user_id').notNull().references(() => users.id),
   spreadId: text('spread_id').notNull(),
   question: text('question').notNull(),
+  mode: text('mode').default('fixed').notNull(), // 'fixed' | 'custom_macro' | 'custom_micro'
+  customSpreadConfig: text('custom_spread_config'), // JSON string for dynamic spread definition
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

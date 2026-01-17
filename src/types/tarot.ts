@@ -35,6 +35,11 @@ export interface PlacedCard {
   isReversed: boolean;
 }
 
+export interface DeckCard {
+  card: TarotCard;
+  isReversed: boolean;
+}
+
 export interface ReadingResult {
   spread: Spread;
   cards: PlacedCard[];

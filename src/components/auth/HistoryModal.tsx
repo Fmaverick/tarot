@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, Calendar, LayoutGrid, MessageSquare, Trash2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
@@ -11,6 +12,8 @@ interface Session {
   question: string;
   createdAt: string;
   spreadId: string;
+  mode: 'fixed' | 'custom_macro' | 'custom_micro';
+  customSpreadConfig?: string;
   cardsDrawn: {
     cardId: string;
     positionId: string;
@@ -29,6 +32,7 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
   const [spreadsMap, setSpreadsMap] = useState<Record<string, Spread>>({});
   const { language, loadSession, setLoadingHistory } = useStore();
   const t = getTranslation(language);
+  const router = useRouter();
 
   useEffect(() => {
     if (open) {
@@ -68,13 +72,38 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
     const session = sessions.find(s => s.id === sessionId);
     if (!session) return;
 
-    const spread = spreadsMap[session.spreadId];
+    let spread: Spread | undefined;
+    const isCustomSession = session.mode && session.mode.startsWith('custom');
+
+    if (isCustomSession) {
+      if (session.customSpreadConfig) {
+        try {
+          const config = JSON.parse(session.customSpreadConfig);
+          spread = {
+            id: session.spreadId,
+            ...config
+          };
+        } catch (e) {
+          console.error("Failed to parse custom spread config", e);
+        }
+      }
+    } else {
+      spread = spreadsMap[session.spreadId];
+    }
+
+    // If it's a custom session, redirect to the custom page with sessionId
+    if (isCustomSession) {
+      onOpenChange(false);
+      router.push(`/custom?sessionId=${sessionId}`);
+      return;
+    }
+
     if (!spread) {
         console.error("Spread not found for session", session.spreadId);
         return;
     }
 
-    // 1. Immediate UI update with available data
+    // 1. Prepare placed cards
     const placedCards: Record<string, PlacedCard> = {};
     if (session.cardsDrawn) {
         session.cardsDrawn.forEach((cd) => {
@@ -89,28 +118,34 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
         });
     }
 
-    // Load with empty history first to show the board immediately
-    loadSession(spread, placedCards, sessionId, [], session.question);
-    onOpenChange(false);
     setLoadingHistory(true);
 
-    // 2. Fetch full details (messages) in background
+    // For normal sessions, load optimistic state first to show the board immediately
+    if (!isCustomSession) {
+        loadSession(spread, placedCards, sessionId, [], session.question);
+        onOpenChange(false);
+    }
+
+    // 2. Fetch full details (messages)
     try {
       const res = await fetch(`/api/sessions/${sessionId}`);
       const data = await res.json();
       
+      let history: any[] = [];
+      
       if (data.session && data.messages) {
         // Convert messages to Chat Message format
-        const history = data.messages.map((m: { id: number; role: 'user' | 'assistant'; content: string; createdAt: string }) => ({
+        history = data.messages.map((m: { id: number; role: 'user' | 'assistant'; content: string; createdAt: string }) => ({
             id: m.id.toString(),
             role: m.role,
             content: m.content,
             createdAt: new Date(m.createdAt)
         }));
-
-        // Update session with loaded history
-        loadSession(spread, placedCards, sessionId, history, session.question);
       }
+
+      // Update session with loaded history
+      loadSession(spread, placedCards, sessionId, history, session.question);
+
     } catch (error) {
       console.error("Failed to load session details", error);
     } finally {
@@ -127,8 +162,16 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
     });
   };
 
-  const getSpreadName = (id: string) => {
-    return spreadsMap[id]?.name || id;
+  const getSpreadName = (session: Session) => {
+    if (session.mode && session.mode.startsWith('custom') && session.customSpreadConfig) {
+      try {
+        const config = JSON.parse(session.customSpreadConfig);
+        return config.name || session.spreadId;
+      } catch (e) {
+        return session.spreadId;
+      }
+    }
+    return spreadsMap[session.spreadId]?.name || session.spreadId;
   };
 
   return (
@@ -183,7 +226,7 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
                       <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                            <LayoutGrid className="w-3 h-3" />
-                           <span>{getSpreadName(session.spreadId)}</span>
+                           <span>{getSpreadName(session)}</span>
                         </div>
                         {session.cardsDrawn && session.cardsDrawn.length > 0 && (
                           <div className="col-span-2 flex flex-wrap gap-1 mt-1">

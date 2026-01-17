@@ -4,7 +4,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { getTranslation } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Sparkles } from "lucide-react";
+import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
+import Link from "next/link";
 import { useRef } from "react";
 
 export function Hero({ onStart }: { onStart: () => void }) {
@@ -94,15 +95,29 @@ export function Hero({ onStart }: { onStart: () => void }) {
           transition={{ delay: 1, duration: 0.8 }}
           className="pt-8"
         >
-          <Button 
-            onClick={onStart}
-            variant="outline" 
-            size="lg"
-            className="rounded-full px-10 py-7 border-emerald-900/10 bg-white/50 hover:bg-emerald-50/50 hover:border-emerald-900/20 text-emerald-950 transition-all duration-500 backdrop-blur-sm group shadow-sm"
-          >
-            <span className="font-serif tracking-widest text-sm uppercase mr-3">{t.hero.cta}</span>
-            <ArrowDown className="w-4 h-4 opacity-50 group-hover:translate-y-1 transition-transform" />
-          </Button>
+          <div className="inline-flex items-center rounded-full border border-emerald-900/10 bg-white/50 backdrop-blur-sm shadow-sm overflow-hidden group/container transition-all duration-500 hover:border-emerald-900/20">
+            {/* Left: Start Reading */}
+            <button 
+              onClick={onStart}
+              className="flex items-center gap-3 px-10 py-6 hover:bg-emerald-50/50 transition-all duration-300 group/left"
+            >
+              <span className="font-serif tracking-widest text-sm uppercase text-emerald-950">
+                {t.hero.cta}
+              </span>
+              <ArrowDown className="w-4 h-4 text-emerald-900/40 group-hover/left:translate-y-1 transition-transform duration-300" />
+            </button>
+
+            {/* Divider */}
+            <div className="w-px h-16 bg-emerald-900/10" />
+
+            {/* Right: Custom Mode */}
+            <Link href="/custom" className="flex items-center gap-3 px-10 py-6 hover:bg-emerald-50/50 transition-all duration-300 group/right">
+              <MessageSquare className="w-4 h-4 text-emerald-900/40 group-hover/right:scale-110 transition-transform duration-300" />
+              <span className="font-serif tracking-widest text-sm uppercase text-emerald-950">
+                {language === 'zh' ? '定制解读' : 'Custom Mode'}
+              </span>
+            </Link>
+          </div>
         </motion.div>
       </motion.div>
 
