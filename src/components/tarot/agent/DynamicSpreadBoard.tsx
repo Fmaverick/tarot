@@ -34,12 +34,12 @@ export function DynamicSpreadBoard({ spread, placedCards, onDrawCard, isDrawing,
     // Index within the current row
     const colInThisRow = index - (row * maxCols);
     
-    // Calculate X and Y percentages
-    // X: Distribute evenly in the row
-    const x = (100 / (itemsInThisRow + 1)) * (colInThisRow + 1);
+    // Calculate X and Y percentages with some padding from edges
+    // X: Distribute evenly in the row, with 15% padding on each side
+    const x = 15 + (70 / (itemsInThisRow + 1)) * (colInThisRow + 1);
     
-    // Y: Distribute rows evenly
-    const y = (100 / (rows + 1)) * (row + 1);
+    // Y: Distribute rows evenly, with 20% padding from top/bottom
+    const y = 20 + (60 / (rows + 1)) * (row + 1);
     
     return { x, y };
   };
@@ -55,6 +55,8 @@ export function DynamicSpreadBoard({ spread, placedCards, onDrawCard, isDrawing,
         {spread.positions.map((pos, index) => {
           const placed = placedCards[pos.id];
           const cardData = placed ? getCard(placed.card.id, language) : null;
+          
+          // Always use auto-layout to prevent overlapping and ignore AI coordinates
           const { x, y } = getLayoutPosition(index, spread.positions.length);
 
           return (

@@ -3,7 +3,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { getTranslation } from "@/lib/i18n";
-import { Button } from "@/components/ui/button";
 import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";

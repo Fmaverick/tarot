@@ -103,6 +103,7 @@ export const messages = pgTable('messages', {
   sessionId: uuid('session_id').notNull().references(() => sessions.id),
   role: text('role').notNull(), // 'user' or 'assistant' usually
   content: text('content').notNull(),
+  data: text('data'), // JSON string for additional structured data (e.g., spread design, cards)
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

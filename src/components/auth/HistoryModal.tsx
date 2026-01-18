@@ -6,6 +6,7 @@ import { useStore } from '@/store/useStore';
 import { getTranslation } from '@/lib/i18n';
 import { PlacedCard, Spread } from '@/types/tarot';
 import { CARDS } from '@/lib/cards';
+import { Message } from 'ai';
 
 interface Session {
   id: string;
@@ -131,14 +132,15 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
       const res = await fetch(`/api/sessions/${sessionId}`);
       const data = await res.json();
       
-      let history: any[] = [];
+      let history: Message[] = [];
       
       if (data.session && data.messages) {
         // Convert messages to Chat Message format
-        history = data.messages.map((m: { id: number; role: 'user' | 'assistant'; content: string; createdAt: string }) => ({
+        history = data.messages.map((m: { id: number; role: 'user' | 'assistant'; content: string; data?: string; createdAt: string }) => ({
             id: m.id.toString(),
             role: m.role,
             content: m.content,
+            data: m.data ? JSON.parse(m.data) : undefined,
             createdAt: new Date(m.createdAt)
         }));
       }
@@ -167,7 +169,7 @@ export function HistoryModal({ open, onOpenChange }: HistoryModalProps) {
       try {
         const config = JSON.parse(session.customSpreadConfig);
         return config.name || session.spreadId;
-      } catch (e) {
+      } catch {
         return session.spreadId;
       }
     }

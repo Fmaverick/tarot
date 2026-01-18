@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useChat } from "ai/react";
+import { useChat, type Message } from "ai/react";
 import { useSearchParams } from "next/navigation";
 import { useStore } from "@/store/useStore";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -16,6 +16,12 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
 import { CARDS } from "@/lib/cards";
+
+interface MessageData {
+  type: 'spread_design';
+  spread: Spread;
+  placedCards?: Record<string, PlacedCard>;
+}
 
 function generateId() {
   return Math.random().toString(36).substring(2, 15);
@@ -37,13 +43,25 @@ export function CustomModeView() {
     loadSession,
     setLoadingHistory
   } = useStore();
-  const { user, fetchUser } = useAuthStore();
+  const { } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   const [currentSpread, setCurrentSpread] = useState<Spread | null>(selectedSpread);
   const [placedCards, setPlacedCards] = useState<Record<string, PlacedCard>>(storePlacedCards);
   const [isPlanning, setIsPlanning] = useState(false);
   
+  const { messages, append, input, handleInputChange, setMessages, isLoading, setInput } = useChat({
+    api: "/api/agent/chat",
+    initialMessages: chatHistory,
+    body: {
+      sessionId,
+      context: {
+        spread: currentSpread,
+        cards: Object.values(placedCards),
+      },
+    },
+  });
+
   // We keep track of the conversation state related to the spread
   const [viewState, setViewState] = useState<'initial' | 'planning' | 'drawing' | 'interpreting' | 'chatting'>(
     chatHistory.length > 0 ? 'chatting' : 'initial'
@@ -97,7 +115,7 @@ export function CustomModeView() {
                 // Parse placed cards
                 const loadedPlacedCards: Record<string, PlacedCard> = {};
                 if (session.cardsDrawn) {
-                    session.cardsDrawn.forEach((cd: any) => {
+                    session.cardsDrawn.forEach((cd: { cardId: string; positionId: string; isReversed: boolean }) => {
                         const card = CARDS.find(c => c.id === cd.cardId);
                         if (card) {
                             loadedPlacedCards[cd.positionId] = {
@@ -110,12 +128,13 @@ export function CustomModeView() {
                 }
 
                 // Parse history
-                let history: any[] = [];
+                let history: Message[] = [];
                 if (data.messages) {
-                    history = data.messages.map((m: { id: number; role: 'user' | 'assistant'; content: string; createdAt: string }) => ({
+                    history = data.messages.map((m: { id: number; role: 'user' | 'assistant'; content: string; data?: string; createdAt: string }) => ({
                         id: m.id.toString(),
                         role: m.role,
                         content: m.content,
+                        data: m.data ? JSON.parse(m.data) : undefined,
                         createdAt: new Date(m.createdAt)
                     }));
                 }
@@ -153,10 +172,13 @@ export function CustomModeView() {
                     let finalHistory = history;
                     if (designMsgIndex !== -1) {
                         finalHistory = [...history];
-                        finalHistory[designMsgIndex] = {
-                            ...finalHistory[designMsgIndex],
-                            data: { type: 'spread_design', spread: spread }
-                        };
+                        // Only attach if not already present or if we want to ensure the session's primary spread is attached
+                        if (!finalHistory[designMsgIndex].data) {
+                            finalHistory[designMsgIndex] = {
+                                ...finalHistory[designMsgIndex],
+                                data: { type: 'spread_design', spread: spread } as unknown as Message['data']
+                            };
+                        }
                     }
 
                     loadSession(spread, loadedPlacedCards, urlSessionId, finalHistory, session.question);
@@ -177,19 +199,7 @@ export function CustomModeView() {
         .catch(err => console.error("Failed to load session", err))
         .finally(() => setLoadingHistory(false));
     }
-  }, [urlSessionId, sessionId, loadSession, setLoadingHistory]);
-
-  const { messages, append, input, handleInputChange, setMessages, isLoading, setInput } = useChat({
-    api: "/api/agent/chat",
-    initialMessages: chatHistory,
-    body: {
-      sessionId,
-      context: {
-        spread: currentSpread,
-        cards: Object.values(placedCards),
-      },
-    },
-  });
+  }, [urlSessionId, sessionId, loadSession, setLoadingHistory, language, setMessages]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -253,11 +263,10 @@ export function CustomModeView() {
     setInput("");
     
     // Add user message to UI immediately
-    const newMessages = [
+    const newMessages: Message[] = [
       ...messages, 
       { id: generateId(), role: 'user', content: userMessage }
     ];
-    // @ts-ignore
     setMessages(newMessages);
 
     // Call Agent Plan
@@ -292,13 +301,12 @@ export function CustomModeView() {
         setViewState('drawing');
         
         // Add a system message indicating the new spread
-        const spreadMessage = {
+        const spreadMessage: Message = {
           id: generateId(),
           role: 'assistant',
           content: t_custom.design_msg(newSpread.name, newSpread.description),
-          data: { type: 'spread_design', spread: newSpread }
+          data: { type: 'spread_design', spread: newSpread } as unknown as Message['data']
         };
-        // @ts-ignore
         setMessages([...newMessages, spreadMessage]);
 
       } else {
@@ -341,6 +349,22 @@ export function CustomModeView() {
 
     const updatedPlaced = { ...placedCards, [positionId]: newPlaced };
     setPlacedCards(updatedPlaced);
+
+    // Update the message in local state immediately to persist the placed card
+    const updatedMessages = messages.map(m => {
+        const data = m.data as unknown as MessageData;
+        if (data?.type === 'spread_design' && data?.spread?.id === currentSpread?.id) {
+            return {
+                ...m,
+                data: {
+                    ...data,
+                    placedCards: updatedPlaced
+                } as unknown as Message['data']
+            };
+        }
+        return m;
+    });
+    setMessages(updatedMessages);
 
     // Check if spread is complete
     if (currentSpread && Object.keys(updatedPlaced).length === currentSpread.positions.length) {
@@ -398,14 +422,14 @@ export function CustomModeView() {
                     )}
 
                     {/* Check for embedded spread */}
-                    {(m as any).data?.type === 'spread_design' && (m as any).data?.spread && (
+                    {(m.data as unknown as MessageData)?.type === 'spread_design' && (m.data as unknown as MessageData)?.spread && (
                         <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
                             <DraggableSpreadBoard
-                                spread={(m as any).data.spread}
+                                spread={(m.data as unknown as MessageData).spread}
                                 placedCards={
                                     // Priority: 1. Persisted cards in message data, 2. Current state if active spread
-                                    (m as any).data.placedCards || 
-                                    ((currentSpread?.id === (m as any).data.spread.id) ? placedCards : {}) 
+                                    (m.data as unknown as MessageData).placedCards || 
+                                    ((currentSpread?.id === (m.data as unknown as MessageData).spread.id) ? placedCards : {}) 
                                 }
                                 onPlaceCard={handlePlaceCard}
                                 deck={deck}

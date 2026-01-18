@@ -21,20 +21,7 @@ export async function POST(req: Request) {
 
   // Ensure session exists
   if (sessionId) {
-    let dbSession = await db.query.sessions.findFirst({
-        where: eq(sessions.id, sessionId),
-    });
-
-    // If session doesn't exist, create it now (if we have enough info to do so)
-    // Note: We might not have 'spread' info yet if we are about to design it.
-    // However, if we are in 'DESIGN_SPREAD' mode, the spread is generated *after* this API call returns.
-    // So we can't create the session with the spread configuration yet.
-    
-    // BUT, the user requirement is "plan needs to be able to create sessionId and record".
-    // This implies we should create the session *after* we generate the plan (spread), 
-    // but *before* we return the response.
-    
-    // Let's move the session creation logic to AFTER generateObject.
+    // Session existence check is handled below after generating the plan
   }
 
   const openai = createOpenAI({
@@ -52,8 +39,6 @@ export async function POST(req: Request) {
         id: z.string(),
         name: z.string(),
         description: z.string(),
-        x: z.number().default(0),
-        y: z.number().default(0),
       })),
     }).optional(),
     reasoning: z.string(),
@@ -127,13 +112,13 @@ export async function POST(req: Request) {
                      // Handle content
                      let contentStr = '';
                      if (typeof lastMessage.content === 'string') {
-                         contentStr = lastMessage.content;
-                     } else if (Array.isArray(lastMessage.content)) {
-                         contentStr = lastMessage.content
-                             .filter((part: any) => part.type === 'text')
-                             .map((part: any) => part.text)
-                             .join('\n');
-                     }
+                        contentStr = lastMessage.content;
+                    } else if (Array.isArray(lastMessage.content)) {
+                        contentStr = (lastMessage.content as Array<{ type: string; text?: string }>)
+                            .filter((part) => part.type === 'text')
+                            .map((part) => part.text || '')
+                            .join('\n');
+                    }
 
                      if (contentStr) {
                          await db.insert(messagesTable).values({
@@ -161,6 +146,7 @@ export async function POST(req: Request) {
                 sessionId,
                 role: 'assistant',
                 content: content,
+                data: plan.action === 'DESIGN_SPREAD' ? JSON.stringify({ type: 'spread_design', spread: plan.spread }) : null,
             });
         }
     }

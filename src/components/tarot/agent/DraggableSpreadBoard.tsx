@@ -80,12 +80,12 @@ export function DraggableSpreadBoard({ spread, placedCards, onPlaceCard, deck, l
     // Index within the current row
     const colInThisRow = index - (row * maxCols);
     
-    // Calculate X and Y percentages
-    // X: Distribute evenly in the row
-    const x = (100 / (itemsInThisRow + 1)) * (colInThisRow + 1);
+    // Calculate X and Y percentages with some padding from edges
+    // X: Distribute evenly in the row, with 15% padding on each side
+    const x = 15 + (70 / (itemsInThisRow + 1)) * (colInThisRow + 1);
     
-    // Y: Distribute rows evenly
-    const y = (100 / (rows + 1)) * (row + 1);
+    // Y: Distribute rows evenly, with 20% padding from top/bottom
+    const y = 20 + (60 / (rows + 1)) * (row + 1);
     
     return { x, y };
   };
@@ -100,21 +100,24 @@ export function DraggableSpreadBoard({ spread, placedCards, onPlaceCard, deck, l
         </div>
 
         <div className="relative w-full aspect-[4/3] max-w-lg mx-auto">
-          {spread.positions.map((pos) => {
+          {spread.positions.map((pos, index) => {
             const placed = placedCards[pos.id];
             const cardData = placed ? getCard(placed.card.id, language) : null;
+
+            // Always use auto-layout to prevent overlapping and ignore AI coordinates
+            const { x, y } = getLayoutPosition(index, spread.positions.length);
 
             return (
               <div
                 key={pos.id}
                 id={`spread-slot-${pos.id}`}
                 className={cn(
-                  "absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center transition-all duration-300",
+                  "absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center transition-all duration-300 group",
                   !placed && "border-2 border-dashed border-black/10 bg-white/20 rounded-lg hover:bg-white/40 hover:border-black/20"
                 )}
                 style={{
-                  left: `${pos.x}%`,
-                  top: `${pos.y}%`,
+                  left: `${x}%`,
+                  top: `${y}%`,
                   width: isMobile ? "50px" : "80px",
                   height: isMobile ? "80px" : "130px",
                 }}

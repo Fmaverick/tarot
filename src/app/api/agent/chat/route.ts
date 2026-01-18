@@ -1,11 +1,11 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, CoreMessage } from "ai";
-import { PlacedCard, SpreadPosition } from "@/types/tarot";
+import { streamText } from "ai";
+import { PlacedCard } from "@/types/tarot";
 import { getSession } from "@/lib/auth";
 import { db } from "@/db";
 import { users, sessions, messages as messagesTable, cardsDrawn } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { getOrGenerateSephirothData, SephirothItem } from "@/lib/sephiroth";
+import { getOrGenerateSephirothData } from "@/lib/sephiroth";
 import { generateChatSystemPrompt } from "@/lib/agent/prompts";
 
 export const maxDuration = 300;
@@ -112,6 +112,41 @@ export async function POST(req: Request) {
       role: 'user',
       content: lastMessage.content,
     });
+  }
+
+  // Update the latest spread_design message with the placed cards if provided
+  if (cards && cards.length > 0) {
+    try {
+        const lastDesignMsg = await db.query.messages.findFirst({
+            where: (m, { and, eq }) => and(
+                eq(m.sessionId, sessionId),
+                eq(m.role, 'assistant')
+            ),
+            orderBy: (m, { desc }) => [desc(m.createdAt)],
+        });
+
+        if (lastDesignMsg && lastDesignMsg.data) {
+            const data = JSON.parse(lastDesignMsg.data);
+            if (data.type === 'spread_design') {
+                // Map cards back to the format expected in data.placedCards
+                const placedCardsRecord: Record<string, PlacedCard> = {};
+                cards.forEach((c: PlacedCard) => {
+                    placedCardsRecord[c.positionId] = c;
+                });
+
+                await db.update(messagesTable)
+                    .set({ 
+                        data: JSON.stringify({ 
+                            ...data, 
+                            placedCards: placedCardsRecord 
+                        }) 
+                    })
+                    .where(eq(messagesTable.id, lastDesignMsg.id));
+            }
+        }
+    } catch (e) {
+        console.error("Failed to update last design message with cards:", e);
+    }
   }
 
   // Use environment variables for configuration
