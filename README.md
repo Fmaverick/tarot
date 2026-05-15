@@ -1,6 +1,23 @@
-# Tarot Agent - 东方极简 AI 塔罗占卜
+# Tarot Agent
 
-Tarot Agent 是一款融合了东方编辑部极简主义（Eastern Editorial Minimalism）美学与前沿 AI 技术的塔罗占卜应用。它不仅仅是一个电子抽牌工具，更是一个能够理解用户意图、动态设计牌阵并提供深度解读的 AI 塔罗导师。
+**An AI-native tarot experience blending interface, narrative, and emotional clarity.**  
+**一个融合界面体验、叙事感与情绪可感知性的 AI 原生塔罗产品。**
+
+Tarot Agent is not just a digital card-drawing app. It explores what happens when spiritual interaction, product design, and lightweight intelligence are treated as one cohesive experience.  
+Tarot Agent 不只是一个电子抽牌工具，它更像是一个产品实验：把精神性体验、界面设计和轻量智能合成到同一个可感知的产品里。
+
+The goal is simple:
+它想回答的问题很简单：
+
+- can AI make guidance feel more personal without becoming noisy  
+  AI 能不能让引导更个性化，同时不过度喧闹
+- can interaction design make reflection feel immersive and calm  
+  交互设计能不能让反思体验更沉浸、更安静
+- can consumer-facing AI products feel emotionally legible, not just technically smart  
+  面向消费者的 AI 产品，能不能不只“聪明”，还“有感觉”
+
+That is the product bet behind Tarot Agent.  
+这就是 Tarot Agent 这款产品背后的核心判断。
 
 ## ✨ 核心特性
 
